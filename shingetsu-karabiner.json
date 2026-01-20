@@ -1,5 +1,4 @@
-{"title": "新月配列",
-"rules":[{
+{
   "description": "新月配列 ☆/★レイヤー切替方式",
   "manipulators":[
     {"conditions":[{"type":"variable_if","name":"shift_state","value":1},
@@ -580,4 +579,4 @@
       "from":{"key_code":"slash","modifiers":{"optional":["caps_lock"]}},
       "to":[{"key_code":"slash"},
       {"set_variable":{"name":"last_char","value":0}}],"type":"basic"}
-]}]}
+]}
