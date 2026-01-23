@@ -233,11 +233,16 @@ impl GeneticAlgorithm {
     /// 突然変異（2つの位置をスワップ）
     fn mutate(&mut self, layout: &mut Layout) {
         // ランダムな非固定位置を2つ選択してスワップ
+        // Ver位置（空白優先配置位置）もスワップから除外
         let positions: Vec<(usize, usize, usize)> = (0..NUM_LAYERS)
             .flat_map(|l| {
                 (0..ROWS).flat_map(move |r| {
                     (0..COLS).filter_map(move |c| {
-                        if !Layout::is_fixed_position(l, r, c) {
+                        // Ver位置の空白は固定扱い（スワップ禁止）
+                        let is_ver_blank = (l == 1 && c == 7 && r == 0) ||  // Layer1, ☆の上
+                                           (l == 2 && c == 2 && (r == 0 || r == 2));  // Layer2, ★の上下
+                        
+                        if !Layout::is_fixed_position(l, r, c) && !is_ver_blank {
                             Some((l, r, c))
                         } else {
                             None
@@ -327,6 +332,42 @@ pub fn run_multi(
                 weights.clone(),
             );
             ga.run()
+        })
+        .collect()
+}
+
+/// マルチラン実行（途中結果を外部ベクタに追加）
+pub fn run_multi_with_storage(
+    corpus: CorpusStats,
+    config: GaConfig,
+    weights: EvaluationWeights,
+    num_runs: usize,
+    completed_storage: std::sync::Arc<std::sync::Mutex<Vec<GaResult>>>,
+) -> Vec<GaResult> {
+    
+    let seeds: Vec<u64> = (0..num_runs)
+        .map(|_| rand::thread_rng().gen::<u64>())
+        .collect();
+
+    seeds
+        .into_par_iter()
+        .map(|seed| {
+            let mut run_config = config.clone();
+            run_config.seed = seed;
+            let mut ga = GeneticAlgorithm::with_weights(
+                corpus.clone(),
+                run_config,
+                weights.clone(),
+            );
+            let result = ga.run();
+            
+            // 完了した結果を外部ストレージに追加
+            {
+                let mut storage = completed_storage.lock().unwrap();
+                storage.push(result.clone());
+            }
+            
+            result
         })
         .collect()
 }

@@ -24,12 +24,12 @@ pub struct EvaluationWeights {
     pub total_keystrokes: f64,
     pub alternating: f64,
     pub single_key: f64,
-    pub colemak_similarity: f64,
-    pub position_cost: f64,  // 位置別コスト評価（ベースコスト×シフト係数）
+    pub colemak_similarity: f64,  // 弱めCore
 
     // Bonus Metrics（加算）
     pub redirect_low: f64,
-    pub tsuki_similarity: f64,
+    pub tsuki_similarity: f64,     // 弱めBonus（月配列一致）
+    pub position_cost: f64,        // 中くらいBonus（位置別コスト）
     pub roll: f64,
     pub inroll: f64,
     pub arpeggio: f64,
@@ -47,12 +47,12 @@ impl Default for EvaluationWeights {
             total_keystrokes: 1.05,  // 総打鍵コスト
             alternating: 1.1,        // 統計的交互打鍵25%（リズム）
             single_key: 0.7,         // 単打鍵率
-            colemak_similarity: 0.6, // Colemak類似度
-            position_cost: 1.3,      // 位置別コスト（頻出文字最適配置）
+            colemak_similarity: 0.4, // Colemak類似度（弱めCore）
 
             // Bonus（加算）
             redirect_low: 5.0,       // リダイレクト制限
-            tsuki_similarity: 4.0,   // 月配列類似度
+            tsuki_similarity: 2.0,   // 月配列類似度（弱めBonus）
+            position_cost: 8.0,      // 位置別コスト（強めBonus - シフト層の配置最適化）
             roll: 6.0,               // アルペジオ調和15%（ロール）
             inroll: 6.0,             // 内向きロール優遇
             arpeggio: 6.0,           // 片手連打の質
@@ -332,7 +332,8 @@ impl Evaluator {
 
     /// 位置別コスト評価（ベースコスト×シフト係数）
     /// 高頻度文字を低コスト位置に配置できているかを評価
-    fn calc_position_cost(&self, _layout: &Layout, char_map: &HashMap<char, KeyPos>) -> f64 {
+    /// 空白文字にもペナルティを与える（高コスト位置の空白は減点）
+    fn calc_position_cost(&self, layout: &Layout, char_map: &HashMap<char, KeyPos>) -> f64 {
         // ベースコスト（No Layer）
         const BASE_COST: [[f64; COLS]; ROWS] = [
             [4.0, 2.0, 2.0, 2.0, 3.0,  4.0, 2.0, 2.0, 2.0, 4.0],  // 上段
@@ -342,37 +343,54 @@ impl Evaluator {
         
         let mut total_cost = 0.0;
         let mut total_freq = 0.0;
+        let mut blank_penalty = 0.0;
         
+        // 1. 通常文字の評価
         for (&c, &count) in &self.corpus.char_freq {
             if let Some(&pos) = char_map.get(&c) {
                 let base = BASE_COST[pos.row][pos.col];
-                let mut multiplier = 1.0;
+                
+                // Layer 1,2はLayer 0よりわずかにペナルティ（シフト操作コスト）
+                let layer_penalty = if pos.layer == 0 { 1.0 } else { 1.05 };
+                let mut multiplier = layer_penalty;
                 
                 if pos.layer == 1 {
-                    // A Layer (☆シフト - eキー: R2-3 = row:1, col:7)
-                    multiplier = 3.0;
+                    // Layer 1（☆シフト） - eキー（col=7、右手中指）を前置で発動
+                    // 左手側（col<=4）は前置シフト後に交互打鍵で非常に使いやすい
                     
-                    // Out: 右手小指側（col >= 8）
-                    if pos.col >= 8 {
-                        multiplier += 10.0;
-                    }
-                    
-                    // Ver: eと同じ指（中指）で上下
-                    if pos.col == 7 && pos.row != 1 {
-                        multiplier += 31.0;
+                    if pos.col <= 4 {
+                        // 左手側は交互打鍵で最も使いやすい → コスト大幅軽減
+                        multiplier = 0.3 * layer_penalty;
+                    } else if pos.col >= 8 {
+                        // Out: eより小指側（col >= 8）- 非常に強いペナルティ
+                        multiplier = 30.0 * layer_penalty;
+                    } else if pos.col == 7 && pos.row != 1 {
+                        // Ver: eと同じ列（col=7）で上下移動 - 最大ペナルティ
+                        multiplier = 80.0 * layer_penalty;
+                    } else if pos.col == 5 || pos.col == 6 {
+                        // 右手側だが小指ではない（col=5,6）
+                        multiplier = 5.0 * layer_penalty;
+                    } else {
+                        multiplier = 5.0 * layer_penalty;
                     }
                 } else if pos.layer == 2 {
-                    // B Layer (★シフト - sキー: L2-3 = row:1, col:2)
-                    multiplier = 3.0;
+                    // Layer 2（★シフト） - sキー（col=2、左手中指）を前置で発動
+                    // 右手側（col>=5）は前置シフト後に交互打鍵で非常に使いやすい
                     
-                    // Out: 左手小指側（col <= 1）
-                    if pos.col <= 1 {
-                        multiplier += 9.0;
-                    }
-                    
-                    // Ver: sと同じ指（中指）で上下
-                    if pos.col == 2 && pos.row != 1 {
-                        multiplier += 29.0;
+                    if pos.col >= 5 {
+                        // 右手側は交互打鍵で最も使いやすい → コスト大幅軽減
+                        multiplier = 0.3 * layer_penalty;
+                    } else if pos.col <= 1 {
+                        // Out: sより小指側（col <= 1）- 非常に強いペナルティ
+                        multiplier = 30.0 * layer_penalty;
+                    } else if pos.col == 2 && pos.row != 1 {
+                        // Ver: sと同じ列（col=2）で上下移動 - 最大ペナルティ
+                        multiplier = 80.0 * layer_penalty;
+                    } else if pos.col >= 3 && pos.col <= 4 {
+                        // 左手側だが小指ではない（col=3,4）
+                        multiplier = 5.0 * layer_penalty;
+                    } else {
+                        multiplier = 5.0 * layer_penalty;
                     }
                 }
                 
@@ -382,6 +400,46 @@ impl Evaluator {
             }
         }
         
+        // 2. 空白文字のペナルティ（高コスト位置の空白を厳しく減点）
+        for layer in 0..NUM_LAYERS {
+            for row in 0..ROWS {
+                for col in 0..COLS {
+                    let c = layout.layers[layer][row][col];
+                    
+                    // 空白以外または固定位置はスキップ
+                    if c != '　' || crate::layout::Layout::is_fixed_position(layer, row, col) {
+                        continue;
+                    }
+                    
+                    // 空白配置の優先順位:
+                    // 1. Ver位置（シフトキーの上下）: ペナルティ0（最高）
+                    // 2. Out位置（シフトキーの小指側）: 小ペナルティ
+                    // 3. その他: 超巨大ペナルティ（禁止）
+                    
+                    let is_ver = (layer == 1 && col == 7 && row != 1) || 
+                                 (layer == 2 && col == 2 && row != 1);
+                    let is_out = (layer == 1 && col >= 8) || 
+                                 (layer == 2 && col <= 1);
+                    
+                    if is_ver {
+                        // Ver位置の空白は理想 - ボーナス（コスト軽減）
+                        blank_penalty -= 10.0;
+                    } else if is_out {
+                        // Out位置の空白は許容 - 小ペナルティ
+                        blank_penalty += 50.0;
+                    } else {
+                        // その他の空白は禁止 - 巨大ペナルティ
+                        blank_penalty += 1000.0;
+                    }
+                }
+            }
+        }
+        
+        // 総コスト = 通常文字コスト + 空白ペナルティ
+        // 空白ペナルティは文字頻度と同じスケールに調整済み
+        total_cost += blank_penalty;
+        total_freq += 1.0; // 空白1個分の重み
+        
         if total_freq == 0.0 {
             return 0.0;
         }
@@ -389,9 +447,9 @@ impl Evaluator {
         // 平均コストを計算（低いほど良い）
         let avg_cost = total_cost / total_freq;
         
-        // 最大コスト想定: 4.0 * (3.0 + 10.0 + 31.0) = 176.0
+        // 最大コスト想定: 4.0 * (3.0 + 20.0 + 50.0) = 292.0
         // スコア化（低コスト=高スコア）
-        let normalized = 1.0 - (avg_cost / 176.0).min(1.0);
+        let normalized = 1.0 - (avg_cost / 292.0).min(1.0);
         normalized * 100.0
     }
     

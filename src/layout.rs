@@ -182,23 +182,27 @@ impl Layout {
         
         // Layer 0 (No Shift) - 高頻度文字最適化
         layers[0] = [
-            ['れ', 'た', 'な', 'に', 'お', 'ち', 'は', 'と', 'こ', 'を'],
-            ['か', 'し', '☆', 'う', 'が', 'く', 'ん', '★', 'い', 'の'],
+            ['れ', 'た', 'な', 'に', 'ょ', 'ち', 'は', 'と', 'こ', 'を'],
+            ['か', 'し', '★', 'う', 'が', 'く', 'ん', '☆', 'い', 'の'],
             ['あ', 'で', 'き', 'て', 'だ', 'っ', 'る', '、', '。', 'さ'],
         ];
         
-        // Layer 1 (☆シフト) - ;・を固定位置に
+        // Layer 1 (☆シフト) - eキー（☆印字、col=7右）前置で発動、;・を、。と同位置に固定
+        // 右手小指側（col>=8）は避ける → 左手側（col=0-4）を積極活用
+        // Ver位置（col=7, row=0）に空白を優先配置
         layers[1] = [
-            ['ぷ', 'そ', 'み', 'ゃ', 'へ', 'ぽ', 'ふ', 'ょ', 'ぁ', 'わ'],
-            ['け', 'つ', 'ら', 'す', 'ね', 'ぶ', 'め', 'ぐ', 'び', 'づ'],
-            ['ぼ', 'ぎ', 'ほ', 'え', 'ぃ', 'ざ', 'ご', '；', '・', 'ぢ'],
+            ['ぷ', 'そ', 'み', 'ゃ', 'へ', 'ぽ', 'ふ', '　', 'ぁ', 'ゔ'],  // col=7に空白
+            ['け', 'つ', 'ら', 'す', 'ね', 'ぶ', 'お', 'ぐ', 'び', 'づ'],
+            ['ぼ', 'ぎ', 'ほ', 'え', 'ぃ', 'ざ', 'わ', '；', '・', 'ぢ'],  // col=7は；固定
         ];
         
-        // Layer 2 (★シフト)
+        // Layer 2 (★シフト) - sキー（★印字、col=2左）前置で発動
+        // 左手小指側（col<=1）とcol=2上下は避ける → 右手側（col=5-9）を積極活用
+        // Ver位置（col=2, row=0,2）に空白を優先配置
         layers[2] = [
-            ['ぉ', 'ぴ', 'ぅ', 'ば', 'ぜ', 'ぱ', 'ひ', 'よ', 'ゅ', 'べ'],
+            ['ぉ', 'ぴ', '　', 'ば', 'ぜ', 'ぱ', 'ひ', 'ー', 'ゅ', 'べ'],  // col=2に空白
             ['ぇ', 'ず', 'げ', 'ま', 'ろ', 'や', 'じ', 'も', 'り', 'せ'],
-            ['ぺ', 'ぬ', 'ど', 'ぞ', 'む', 'ぶ', 'ゆ', 'ー', 'ゃ', '　'],
+            ['ぺ', 'ぬ', '　', 'よ', 'ぞ', 'む', 'ど', 'め', 'ご', 'ゆ'],  // col=2に空白
         ];
         
         Self {
@@ -219,10 +223,15 @@ impl Layout {
         let mut chars: Vec<char> = hiragana_chars.to_vec();
         
         // 90ポジション中、固定位置：
-        // Layer 0: ★☆（2個）+、。（2個）
-        // Layer 2: ;・（2個）
-        // 実際に配置可能: 90 - 6 = 84ポジション
-        let total_positions = KEYS_PER_LAYER * NUM_LAYERS - 6;
+        // Layer 0: ★☆（2個）+、。（2個）= 4個
+        // Layer 1: ;・（2個）= 2個
+        // Ver空白: L1[0][7], L2[0][2], L2[2][2] = 3個
+        // 実際に配置可能（シャッフル対象）: 90 - 6 - 3 = 81ポジション
+        const FIXED_COUNT: usize = 6;   // ★☆、。；・
+        const VER_BLANK_COUNT: usize = 3;  // Ver位置の空白
+        let total_positions = KEYS_PER_LAYER * NUM_LAYERS - FIXED_COUNT - VER_BLANK_COUNT;
+        
+        // 81個分の文字を用意（足りなければ空白で埋める）
         while chars.len() < total_positions {
             chars.push('　');
         }
@@ -235,29 +244,46 @@ impl Layout {
         
         // 固定文字の配置
         // Layer 0: シフトキーと句読点
-        layers[0][1][2] = '☆';  // sキー: ☆シフト
-        layers[0][1][7] = '★';  // eキー: ★シフト
+        layers[0][1][2] = '★';  // sキー（col=2、左） → 前置で Layer 2（★シフト）発動
+        layers[0][1][7] = '☆';  // eキー（col=7、右） → 前置で Layer 1（☆シフト）発動
         layers[0][2][7] = '、';
         layers[0][2][8] = '。';
         
-        // Layer 1（☆シフト）: 記号
-        layers[1][2][7] = '；';  // セミコロン
-        layers[1][2][8] = '・';  // 中黒
+        // Layer 1（☆シフト）: 記号 - 、。と同じ物理位置に配置
+        layers[1][2][7] = '；';  // セミコロン（、の位置）
+        layers[1][2][8] = '・';  // 中黒（。の位置）
         
-        // 残りの文字をシャッフルして配置
+        // Ver位置に空白を固定配置（最悪位置 = 空白が最適）
+        layers[1][0][7] = '　';  // Layer 1, ☆の上（col=7, row=0）
+        layers[2][0][2] = '　';  // Layer 2, ★の上（col=2, row=0）
+        layers[2][2][2] = '　';  // Layer 2, ★の下（col=2, row=2）
+        
+        // シャッフルした文字を配置（Ver位置と固定位置を除く81ポジション）
         let mut char_idx = 0;
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
                 for col in 0..COLS {
-                    if !Self::is_fixed_position(layer, row, col) {
+                    // Ver位置の空白判定
+                    let is_ver_blank = (layer == 1 && col == 7 && row == 0) ||
+                                       (layer == 2 && col == 2 && (row == 0 || row == 2));
+                    
+                    // 固定位置とVer空白位置をスキップ
+                    if !Self::is_fixed_position(layer, row, col) && !is_ver_blank {
                         if char_idx < chars.len() {
                             layers[layer][row][col] = chars[char_idx];
                             char_idx += 1;
+                        } else {
+                            // 本来ここには到達しないはず（配置数が一致）
+                            layers[layer][row][col] = '　';
                         }
                     }
                 }
             }
         }
+        
+        // デバッグ確認: char_idxがchars.lenと一致するはず
+        debug_assert_eq!(char_idx, chars.len(), 
+            "配置した文字数({})と用意した文字数({})が不一致", char_idx, chars.len());
         
         Self {
             layers,
@@ -268,7 +294,7 @@ impl Layout {
 
     /// 固定位置かどうかを判定
     pub fn is_fixed_position(layer: usize, row: usize, col: usize) -> bool {
-        // Layer 0：シフトキー位置（★s, ☆e）
+        // Layer 0：シフトキー位置（★=s/col2左, ☆=e/col7右）
         if layer == 0 && row == 1 && (col == 2 || col == 7) {
             return true;
         }
@@ -276,7 +302,7 @@ impl Layout {
         if layer == 0 && row == 2 && (col == 7 || col == 8) {
             return true;
         }
-        // Layer 1（☆シフト）：記号（;・）
+        // Layer 1（☆シフト）：記号（;・） - 、。と同じ物理位置
         if layer == 1 && row == 2 && (col == 7 || col == 8) {
             return true;
         }
