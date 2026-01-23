@@ -48,11 +48,11 @@ impl Default for EvaluationWeights {
             alternating: 1.1,        // 統計的交互打鍵25%（リズム）
             single_key: 0.7,         // 単打鍵率
             colemak_similarity: 0.4, // Colemak類似度（弱めCore）
+            position_cost: 2.5,      // Core昇格（最強の重要度・SFBより優先）
 
             // Bonus（加算）
             redirect_low: 5.0,       // リダイレクト制限
             tsuki_similarity: 2.0,   // 月配列類似度（弱めBonus）
-            position_cost: 8.0,      // 位置別コスト（強めBonus - シフト層の配置最適化）
             roll: 6.0,               // アルペジオ調和15%（ロール）
             inroll: 6.0,             // 内向きロール優遇
             arpeggio: 6.0,           // 片手連打の質
@@ -330,126 +330,110 @@ impl Evaluator {
         )
     }
 
-    /// 位置別コスト評価（ベースコスト×シフト係数）
+    /// 位置別コスト評価（幾何平均方式）
     /// 高頻度文字を低コスト位置に配置できているかを評価
-    /// 空白文字にもペナルティを与える（高コスト位置の空白は減点）
+    /// 乗算ベースなので高コスト位置への配置がより強くペナルティされる
     fn calc_position_cost(&self, layout: &Layout, char_map: &HashMap<char, KeyPos>) -> f64 {
-        // ベースコスト（No Layer）
+        // ベースコスト（No Layer） - 1.0が最良
         const BASE_COST: [[f64; COLS]; ROWS] = [
             [4.0, 2.0, 2.0, 2.0, 3.0,  4.0, 2.0, 2.0, 2.0, 4.0],  // 上段
             [2.0, 1.0, 1.0, 1.0, 2.0,  2.0, 1.0, 1.0, 1.0, 2.0],  // 中段
             [4.0, 3.0, 2.0, 2.0, 4.0,  3.0, 2.0, 2.0, 2.0, 4.0],  // 下段
         ];
-        
-        let mut total_cost = 0.0;
+
+        // 幾何平均: exp(Σ(freq × ln(cost)) / Σfreq)
+        // ln(1/cost)を使うと低コスト=高スコアになる
+        let mut log_sum = 0.0;
         let mut total_freq = 0.0;
-        let mut blank_penalty = 0.0;
-        
+
         // 1. 通常文字の評価
         for (&c, &count) in &self.corpus.char_freq {
             if let Some(&pos) = char_map.get(&c) {
                 let base = BASE_COST[pos.row][pos.col];
-                
+
                 // Layer 1,2はLayer 0よりわずかにペナルティ（シフト操作コスト）
                 let layer_penalty = if pos.layer == 0 { 1.0 } else { 1.05 };
                 let mut multiplier = layer_penalty;
-                
+
                 if pos.layer == 1 {
-                    // Layer 1（☆シフト） - eキー（col=7、右手中指）を前置で発動
-                    // 左手側（col<=4）は前置シフト後に交互打鍵で非常に使いやすい
-                    
-                    if pos.col <= 4 {
-                        // 左手側は交互打鍵で最も使いやすい → コスト大幅軽減
-                        multiplier = 0.3 * layer_penalty;
-                    } else if pos.col >= 8 {
-                        // Out: eより小指側（col >= 8）- 非常に強いペナルティ
-                        multiplier = 30.0 * layer_penalty;
-                    } else if pos.col == 7 && pos.row != 1 {
-                        // Ver: eと同じ列（col=7）で上下移動 - 最大ペナルティ
-                        multiplier = 80.0 * layer_penalty;
-                    } else if pos.col == 5 || pos.col == 6 {
-                        // 右手側だが小指ではない（col=5,6）
-                        multiplier = 5.0 * layer_penalty;
-                    } else {
-                        multiplier = 5.0 * layer_penalty;
+                    // Layer 1（☆シフト）
+                    multiplier = 3.0 * layer_penalty;
+
+                    // Ver: ☆の上下段（col=7, row!=1）
+                    if pos.col == 7 && pos.row != 1 {
+                        multiplier += 27.0;
+                    }
+                    // Out: ☆より小指側（col >= 8）
+                    if pos.col >= 8 {
+                        multiplier += 9.0;
                     }
                 } else if pos.layer == 2 {
-                    // Layer 2（★シフト） - sキー（col=2、左手中指）を前置で発動
-                    // 右手側（col>=5）は前置シフト後に交互打鍵で非常に使いやすい
-                    
-                    if pos.col >= 5 {
-                        // 右手側は交互打鍵で最も使いやすい → コスト大幅軽減
-                        multiplier = 0.3 * layer_penalty;
-                    } else if pos.col <= 1 {
-                        // Out: sより小指側（col <= 1）- 非常に強いペナルティ
-                        multiplier = 30.0 * layer_penalty;
-                    } else if pos.col == 2 && pos.row != 1 {
-                        // Ver: sと同じ列（col=2）で上下移動 - 最大ペナルティ
-                        multiplier = 80.0 * layer_penalty;
-                    } else if pos.col >= 3 && pos.col <= 4 {
-                        // 左手側だが小指ではない（col=3,4）
-                        multiplier = 5.0 * layer_penalty;
-                    } else {
-                        multiplier = 5.0 * layer_penalty;
+                    // Layer 2（★シフト）
+                    multiplier = 3.0 * layer_penalty;
+
+                    // Ver: ★の上下段（col=2, row!=1）
+                    if pos.col == 2 && pos.row != 1 {
+                        multiplier += 27.0;
+                    }
+                    // Out: ★より小指側（col <= 1）
+                    if pos.col <= 1 {
+                        multiplier += 9.0;
                     }
                 }
-                
+
                 let cost = base * multiplier;
-                total_cost += cost * count as f64;
-                total_freq += count as f64;
+                let freq = count as f64;
+
+                // ln(1/cost) = -ln(cost) を頻度で重み付け
+                log_sum += freq * (-(cost as f64).ln());
+                total_freq += freq;
             }
         }
-        
-        // 2. 空白文字のペナルティ（高コスト位置の空白を厳しく減点）
+
+        // 2. 空白文字のペナルティ（乗算で反映）
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
                 for col in 0..COLS {
                     let c = layout.layers[layer][row][col];
-                    
-                    // 空白以外または固定位置はスキップ
+
                     if c != '　' || crate::layout::Layout::is_fixed_position(layer, row, col) {
                         continue;
                     }
-                    
-                    // 空白配置の優先順位:
-                    // 1. Ver位置（シフトキーの上下）: ペナルティ0（最高）
-                    // 2. Out位置（シフトキーの小指側）: 小ペナルティ
-                    // 3. その他: 超巨大ペナルティ（禁止）
-                    
-                    let is_ver = (layer == 1 && col == 7 && row != 1) || 
+
+                    let is_ver = (layer == 1 && col == 7 && row != 1) ||
                                  (layer == 2 && col == 2 && row != 1);
-                    let is_out = (layer == 1 && col >= 8) || 
+                    let is_out = (layer == 1 && col >= 8) ||
                                  (layer == 2 && col <= 1);
-                    
-                    if is_ver {
-                        // Ver位置の空白は理想 - ボーナス（コスト軽減）
-                        blank_penalty -= 10.0;
+
+                    // 空白位置のコスト（乗算に反映）
+                    let blank_cost: f64 = if is_ver {
+                        0.5  // Ver位置の空白はボーナス（コスト<1）
                     } else if is_out {
-                        // Out位置の空白は許容 - 小ペナルティ
-                        blank_penalty += 50.0;
+                        2.0  // Out位置の空白は許容
                     } else {
-                        // その他の空白は禁止 - 巨大ペナルティ
-                        blank_penalty += 1000.0;
-                    }
+                        50.0 // その他の空白は強いペナルティ
+                    };
+
+                    // 空白1個あたりの重み（頻度相当）
+                    let blank_weight = total_freq * 0.01; // 全体の1%相当
+                    log_sum += blank_weight * (-blank_cost.ln());
+                    total_freq += blank_weight;
                 }
             }
         }
-        
-        // 総コスト = 通常文字コスト + 空白ペナルティ
-        // 空白ペナルティは文字頻度と同じスケールに調整済み
-        total_cost += blank_penalty;
-        total_freq += 1.0; // 空白1個分の重み
-        
+
         if total_freq == 0.0 {
             return 0.0;
         }
-        
-        // 平均コストを計算（低いほど良い）
-        let avg_cost = total_cost / total_freq;
-        
-        // 最大コスト想定: 4.0 * (3.0 + 20.0 + 50.0) = 292.0
-        // スコア化（低コスト=高スコア）
-        let normalized = 1.0 - (avg_cost / 292.0).min(1.0);
+
+        // 幾何平均のスコア = exp(log_sum / total_freq)
+        // これは 1/幾何平均(costs) に相当（低コスト=高スコア）
+        let geo_score = (log_sum / total_freq).exp();
+
+        // 最大スコア: 1/1.0 = 1.0（全て最良位置）
+        // 最小スコア: 1/120 ≈ 0.008（全て最悪位置）
+        // 0-100%にスケーリング
+        let normalized = geo_score.min(1.0);
         normalized * 100.0
     }
     
@@ -466,7 +450,7 @@ impl Evaluator {
         }
 
         for layer in 0..NUM_LAYERS {
-            let layer_weight = if layer == 0 { 1.0 } else { 0.8 };
+            let layer_weight = if layer == 0 { 1.0 } else { 0.3 };
 
             for row in 0..ROWS {
                 for col in 0..COLS {

@@ -22,7 +22,6 @@ use ratatui::{
 
 use crate::evaluation::EvaluationWeights;
 use crate::layout::Layout as KeyboardLayout;
-use crate::corpus::CorpusStats;
 
 /// TUI状態
 pub struct TuiState {
@@ -32,17 +31,16 @@ pub struct TuiState {
     pub fitness_history: Vec<f64>,
     pub best_layout: Option<KeyboardLayout>,
     pub weights: Option<EvaluationWeights>,
-    pub corpus_stats: Option<Arc<CorpusStats>>,
     pub running: bool,
     pub debug: bool,
 }
 
 impl TuiState {
     pub fn new(max_generations: usize) -> Self {
-        Self::new_with_debug(max_generations, false, None)
+        Self::new_with_debug(max_generations, false)
     }
     
-    pub fn new_with_debug(max_generations: usize, debug: bool, corpus_stats: Option<Arc<CorpusStats>>) -> Self {
+    pub fn new_with_debug(max_generations: usize, debug: bool) -> Self {
         Self {
             generation: 0,
             max_generations,
@@ -50,7 +48,6 @@ impl TuiState {
             fitness_history: Vec::with_capacity(max_generations),
             best_layout: None,
             weights: None,
-            corpus_stats,
             running: true,
             debug,
         }
@@ -125,17 +122,27 @@ impl TuiApp {
             render_graph(f, main_chunks[1], state);
             
             if state.debug {
-                // デバッグモード: 2段構成（上段：キーボードのみ、下段：デバッグ3カラム）
+                // デバッグモード: 2段構成（上段：キーボード+スコア、下段：デバッグ）
                 let debug_rows = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([
-                        Constraint::Length(19),  // 上段: キーボードのみ（3行拡張）
-                        Constraint::Min(20),     // 下段: デバッグ3カラム
+                        Constraint::Length(18),  // 上段: キーボード+スコア
+                        Constraint::Min(20),     // 下段: デバッグ（広く）
                     ])
                     .split(main_chunks[2]);
                 
-                render_keyboard(f, debug_rows[0], state);
-                render_debug_panel(f, debug_rows[1], state); // 下段でスコア+採点+位置コスト
+                // 上段を左右分割
+                let top_chunks = Layout::default()
+                    .direction(Direction::Horizontal)
+                    .constraints([
+                        Constraint::Percentage(45), // キーボード
+                        Constraint::Percentage(55), // スコア
+                    ])
+                    .split(debug_rows[0]);
+                
+                render_keyboard(f, top_chunks[0], state);
+                render_scores_and_weights(f, top_chunks[1], state);
+                render_debug_panel(f, debug_rows[1], state); // 下段全幅でデバッグ
             } else {
                 // 通常モード: 2分割
                 render_keyboard(f, bottom_chunks[0], state);
@@ -338,7 +345,7 @@ fn calc_colemak_match_detail(layers: &[[[char; 10]; 3]; 3]) -> (usize, usize, us
     
     // 評価関数と同じく全レイヤーを評価（Layer 0重視）
     for layer in 0..3 {
-        let layer_weight = if layer == 0 { 1.0 } else { 0.3 };
+        let layer_weight = if layer == 0 { 1.0 } else { 0.8 };
         
         for row in 0..3 {
             for col in 0..10 {
@@ -390,35 +397,12 @@ fn calc_colemak_match_detail(layers: &[[[char; 10]; 3]; 3]) -> (usize, usize, us
                     }
                 }
                 
-                // スコアリング
-                // 音素の種類で判定を分岐
-                let is_vowel_only = consonant.is_none() && vowel.is_some();
-                let is_consonant_only = consonant.is_some() && vowel.is_none();
-                
-                if is_vowel_only {
-                    // 母音のみ（あいうえお）：完全一致なら◎、行一致以上で○
-                    if vowel_score >= 1.0 {
-                        perfect += 1;
-                    } else if vowel_score >= 0.5 {
-                        partial += 1;
-                    }
-                } else if is_consonant_only {
-                    // 子音のみ（ん）：完全一致なら◎、行一致以上で○
-                    if cons_score >= 1.0 {
-                        perfect += 1;
-                    } else if cons_score >= 0.5 {
-                        partial += 1;
-                    }
-                } else {
-                    // 子音+母音：両方完全一致で◎、どちらか完全一致で○
-                    let has_perfect_match = cons_score >= 1.0 || vowel_score >= 1.0;
-                    let total_score = cons_score + vowel_score;
-                    
-                    if total_score >= 1.8 {
-                        perfect += 1;
-                    } else if has_perfect_match {
-                        partial += 1;
-                    }
+                // スコアリング（簡略化: 完全一致と部分一致）
+                let total_score = cons_score + vowel_score;
+                if total_score >= 1.8 {  // ほぼ完全一致
+                    perfect += 1;
+                } else if total_score > 0.0 {  // 何らかの一致
+                    partial += 1;
                 }
             }
         }
@@ -428,9 +412,7 @@ fn calc_colemak_match_detail(layers: &[[[char; 10]; 3]; 3]) -> (usize, usize, us
 }
 
 /// 月配列一致詳細を計算（ヘルパー関数）
-/// 戻り値: (L0一致, L0総数, L1一致, L1総数, L2一致, L2総数)
-fn calc_tsuki_match_detail(layers: &[[[char; 10]; 3]; 3]) -> (usize, usize, usize, usize, usize, usize) {
-    // 月配列: Layer 0 = 表面, Layer 1 = 裏面
+fn calc_tsuki_match_detail(layers: &[[[char; 10]; 3]; 3]) -> (usize, usize) {
     let tsuki_layers = [
         [
             ['そ', 'こ', 'し', 'て', 'ょ', 'つ', 'ん', 'い', 'の', 'り'],
@@ -443,50 +425,30 @@ fn calc_tsuki_match_detail(layers: &[[[char; 10]; 3]; 3]) -> (usize, usize, usiz
             ['ぅ', 'へ', 'せ', 'ゅ', 'ゃ', 'む', 'ろ', 'ね', 'ー', 'ぉ'],
         ],
     ];
-
-    let mut l0_matched = 0;
-    let mut l0_total = 0;
-    let mut l1_matched = 0;
-    let mut l1_total = 0;
-    let mut l2_matched = 0;
-    let mut l2_total = 0;
-
-    for ga_layer in 0..3 {
-        // GA Layer 0 → 月 Layer 0（表面）
-        // GA Layer 1, 2 → 月 Layer 1（裏面）
-        let tsuki_layer = if ga_layer == 0 { 0 } else { 1 };
-
+    
+    let mut matched = 0;
+    let mut total = 0;
+    
+    for layer in 0..2 {
         for row in 0..3 {
             for col in 0..10 {
-                let kana = layers[ga_layer][row][col];
-                let tsuki_char = tsuki_layers[tsuki_layer][row][col];
-
+                let kana = layers[layer][row][col];
+                let tsuki_char = tsuki_layers[layer][row][col];
+                
                 if kana == '★' || kana == '☆' || kana == '、' || kana == '。' || kana == '　' ||
                    tsuki_char == '★' || tsuki_char == '☆' || tsuki_char == '、' || tsuki_char == '。' ||
                    tsuki_char == '゛' || tsuki_char == '゜' || tsuki_char == '　' {
                     continue;
                 }
-
-                let is_match = kana == tsuki_char;
-                match ga_layer {
-                    0 => {
-                        l0_total += 1;
-                        if is_match { l0_matched += 1; }
-                    }
-                    1 => {
-                        l1_total += 1;
-                        if is_match { l1_matched += 1; }
-                    }
-                    2 => {
-                        l2_total += 1;
-                        if is_match { l2_matched += 1; }
-                    }
-                    _ => {}
+                
+                total += 1;
+                if kana == tsuki_char {
+                    matched += 1;
                 }
             }
         }
     }
-    (l0_matched, l0_total, l1_matched, l1_total, l2_matched, l2_total)
+    (matched, total)
 }
 
 /// キーごとの位置コストを計算（評価ロジックと同じ）
@@ -530,75 +492,85 @@ fn calc_position_cost_for_key(pos: &crate::layout::KeyPos) -> f64 {
     base_cost * multiplier
 }
 
-/// デバッグパネルを描画（全計算過程・3カラム）
+/// デバッグパネルを描画（全計算過程・2カラム）
 fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
-    // 3カラムに分割
+    // 2カラムに分割
     let columns = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(30), // 左：Core/Bonus計算式
-            Constraint::Percentage(35), // 中央：キーごと採点
-            Constraint::Percentage(35), // 右：位置コスト
+            Constraint::Percentage(50), // 左カラム
+            Constraint::Percentage(50), // 右カラム
         ])
         .split(area);
     
+    // 左カラム: Core Metrics + Colemak詳細
     let mut left_lines = vec![];
-    let mut center_lines = vec![];
+    // 右カラム: 位置コスト + Bonus Metrics + Final
     let mut right_lines = vec![];
     
     if let (Some(layout), Some(w)) = (&state.best_layout, &state.weights) {
         let s = &layout.scores;
         let layers = &layout.layers;
         
-        // ========== 左カラム: Similarity & Scores + 計算式 ==========
-        left_lines.push(Line::from(Span::styled(
-            "=== Similarity ===",
-            Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
-        )));
-        
-        // Similarity詳細
-        let (colemak_perfect, colemak_partial, colemak_total) = calc_colemak_match_detail(&layers);
-        left_lines.push(Line::from(format!(
-            "Colemak: {:.1}% (◎{} ○{} ×{})",
-            s.colemak_similarity, colemak_perfect, colemak_partial,
-            colemak_total - colemak_perfect - colemak_partial
-        )));
-        
-        let (l0_m, l0_t, l1_m, l1_t, l2_m, l2_t) = calc_tsuki_match_detail(&layers);
-        let total_match = l0_m + l1_m + l2_m;
-        let total_all = l0_t + l1_t + l2_t;
-        left_lines.push(Line::from(format!(
-            "月配列: {:.1}% (○{}/{})",
-            s.tsuki_similarity, total_match, total_all
-        )));
-        left_lines.push(Line::from(format!(
-            "  L0:{}/{} L1:{}/{} L2:{}/{}",
-            l0_m, l0_t, l1_m, l1_t, l2_m, l2_t
-        )));
-        
-        left_lines.push(Line::from(""));
+        // === 左カラム: Core Metrics + Colemak詳細 ===
         left_lines.push(Line::from(Span::styled(
             "=== Core Metrics ===",
             Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
         )));
+        left_lines.push(Line::from(""));
         
-        // Core計算式（簡略版）
-        left_lines.push(Line::from(format!("SFB: {:.1}%^{:.1}={:.3}",
-            s.same_finger, w.same_finger, (s.same_finger/100.0).powf(w.same_finger))));
-        left_lines.push(Line::from(format!("LSB: {:.1}%^{:.1}={:.3}",
-            s.row_skip, w.row_skip, (s.row_skip/100.0).powf(w.row_skip))));
-        left_lines.push(Line::from(format!("ホーム: {:.1}%^{:.1}={:.3}",
-            s.home_position, w.home_position, (s.home_position/100.0).powf(w.home_position))));
-        left_lines.push(Line::from(format!("打鍵: {:.1}%^{:.1}={:.3}",
-            s.total_keystrokes, w.total_keystrokes, (s.total_keystrokes/100.0).powf(w.total_keystrokes))));
-        left_lines.push(Line::from(format!("交互: {:.1}%^{:.1}={:.3}",
-            s.alternating, w.alternating, (s.alternating/100.0).powf(w.alternating))));
-        left_lines.push(Line::from(format!("単打: {:.1}%^{:.1}={:.3}",
-            s.single_key, w.single_key, (s.single_key/100.0).powf(w.single_key))));
-        left_lines.push(Line::from(format!("Colemak: {:.1}%^{:.1}={:.3}",
-            s.colemak_similarity, w.colemak_similarity, (s.colemak_similarity/100.0).powf(w.colemak_similarity))));
-        left_lines.push(Line::from(format!("位置: {:.1}%^{:.1}={:.3}",
-            s.position_cost, w.position_cost, (s.position_cost/100.0).powf(w.position_cost))));
+        left_lines.push(Line::from(Span::styled(
+            "■ 計算式", 
+            Style::default().fg(Color::Cyan)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "SFB: {:.1}%^{:.1}={:.3}",
+            s.same_finger, w.same_finger,
+            (s.same_finger/100.0).powf(w.same_finger)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "LSB: {:.1}%^{:.1}={:.3}",
+            s.row_skip, w.row_skip,
+            (s.row_skip/100.0).powf(w.row_skip)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "ホーム: {:.1}%^{:.1}={:.3}",
+            s.home_position, w.home_position,
+            (s.home_position/100.0).powf(w.home_position)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "打鍵: {:.1}%^{:.1}={:.3}",
+            s.total_keystrokes, w.total_keystrokes,
+            (s.total_keystrokes/100.0).powf(w.total_keystrokes)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "交互: {:.1}%^{:.1}={:.3}",
+            s.alternating, w.alternating,
+            (s.alternating/100.0).powf(w.alternating)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "単打: {:.1}%^{:.1}={:.3}",
+            s.single_key, w.single_key,
+            (s.single_key/100.0).powf(w.single_key)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "Colemak: {:.1}%^{:.1}={:.3}",
+            s.colemak_similarity, w.colemak_similarity,
+            (s.colemak_similarity/100.0).powf(w.colemak_similarity)
+        )));
+        
+        left_lines.push(Line::from(format!(
+            "位置: {:.1}%^{:.1}={:.3}",
+            s.position_cost, w.position_cost,
+            (s.position_cost/100.0).powf(w.position_cost)
+        )));
         
         let core_product = (s.same_finger/100.0).powf(w.same_finger)
             * (s.row_skip/100.0).powf(w.row_skip)
@@ -614,24 +586,259 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
         let core_mult = core_product.powf(1.0 / total_weight) * 100.0;
         
         left_lines.push(Line::from(""));
-        left_lines.push(Line::from(format!("→Core総合: {:.4}", core_mult)));
+        left_lines.push(Line::from(format!("→Core: {:.4}", core_mult)));
         
-        // Bonus計算式
-        left_lines.push(Line::from(""));
-        left_lines.push(Line::from(Span::styled(
-            "=== Bonus ===",
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        // === Colemak類似詳細（キーごと採点：◎母音子音両一致/○片一致/×不一致） ===
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            "■ Colemak一致キー配置（◎両一致/○片一致/×不一致）", 
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
         )));
-        left_lines.push(Line::from(format!("リダイレクト: {:.1}×{:.1}={:.1}",
-            s.redirect_low, w.redirect_low, s.redirect_low * w.redirect_low)));
-        left_lines.push(Line::from(format!("月類似: {:.1}×{:.1}={:.1}",
-            s.tsuki_similarity, w.tsuki_similarity, s.tsuki_similarity * w.tsuki_similarity)));
-        left_lines.push(Line::from(format!("ロール: {:.2}×{:.1}={:.1}",
-            s.roll, w.roll, s.roll * w.roll)));
-        left_lines.push(Line::from(format!("インロール: {:.2}×{:.1}={:.1}",
-            s.inroll, w.inroll, s.inroll * w.inroll)));
-        left_lines.push(Line::from(format!("アルペジオ: {:.2}×{:.1}={:.1}",
-            s.arpeggio, w.arpeggio, s.arpeggio * w.arpeggio)));
+        
+        // Colemak配列定義（英字→期待される音素）
+        let colemak_layout = [
+            ['q', 'w', 'f', 'p', 'g', 'j', 'l', 'u', 'y', ';'],
+            ['a', 'r', 's', 't', 'd', 'h', 'n', 'e', 'i', 'o'],
+            ['z', 'x', 'c', 'v', 'b', 'k', 'm', ',', '.', '/'],
+        ];
+        
+        // 英字→音素マッピング（子音, 母音）
+        let english_phonemes = |c: char| -> (Option<&str>, Option<&str>) {
+            match c {
+                'a' => (None, Some("a")),       // 母音のみ
+                'e' => (None, Some("e")),
+                'i' => (None, Some("i")),
+                'o' => (None, Some("o")),
+                'u' => (None, Some("u")),
+                'k' => (Some("k"), None),       // 子音のみ
+                's' => (Some("s"), None),
+                't' => (Some("t"), None),
+                'n' => (Some("n"), None),
+                'h' => (Some("h"), None),
+                'm' => (Some("m"), None),
+                'y' => (Some("y"), None),
+                'r' => (Some("r"), None),
+                'w' => (Some("w"), None),
+                'f' => (Some("f"), None),
+                'p' => (Some("p"), None),
+                'g' => (Some("g"), None),
+                'd' => (Some("d"), None),
+                'b' => (Some("b"), None),
+                'z' => (Some("z"), None),
+                'j' => (Some("j"), None),
+                'l' => (Some("r"), None),       // lはrに対応
+                _ => (None, None),
+            }
+        };
+        
+        // かな→音素マッピング（子音, 母音）
+        use crate::layout::romaji_phonemes;
+        
+        let mut colemak_perfect_count = 0;  // ◎両一致
+        let mut colemak_partial_count = 0;   // ○片一致
+        let mut colemak_total_count = 0;
+        
+        for row in 0..3 {
+            let mut match_line = String::new();
+            for col in 0..10 {
+                let kana = layers[0][row][col];
+                let colemak_char = colemak_layout[row][col];
+                
+                // 記号・シフトキー・特殊文字は除外
+                if kana == '★' || kana == '☆' || kana == '、' || kana == '。' || kana == '　' || 
+                   kana == 'ー' || kana == 'っ' || kana == 'ゃ' || kana == 'ゅ' || kana == 'ょ' ||
+                   kana == 'ぁ' || kana == 'ぃ' || kana == 'ぅ' || kana == 'ぇ' || kana == 'ぉ' ||
+                   colemak_char == ',' || colemak_char == '.' || colemak_char == ';' {
+                    match_line.push_str("  ");
+                    continue;
+                }
+                
+                colemak_total_count += 1;
+                
+                // 期待される音素（英字から）
+                let (expected_cons, expected_vowel) = english_phonemes(colemak_char);
+                
+                // 実際の音素（かなから）
+                let (actual_cons, actual_vowel) = romaji_phonemes(kana);
+                
+                // 両方の音素がNoneの場合はスキップ（判定不能）
+                if expected_cons.is_none() && expected_vowel.is_none() && 
+                   actual_cons.is_none() && actual_vowel.is_none() {
+                    match_line.push_str("  ");
+                    colemak_total_count -= 1;
+                    continue;
+                }
+                
+                // 一致判定
+                let cons_match = match (expected_cons, actual_cons) {
+                    (Some(e), Some(a)) => e == a,      // 両方あり→比較
+                    (None, None) => true,               // 両方なし→一致
+                    _ => false,                         // 片方のみ→不一致
+                };
+                
+                let vowel_match = match (expected_vowel, actual_vowel) {
+                    (Some(e), Some(a)) => e == a,      // 両方あり→比較
+                    (None, None) => true,               // 両方なし→一致
+                    _ => false,                         // 片方のみ→不一致
+                };
+                
+                // ◎両一致 / ○片一致 / ×不一致
+                if cons_match && vowel_match {
+                    colemak_perfect_count += 1;
+                    match_line.push('◎');
+                } else if cons_match || vowel_match {
+                    colemak_partial_count += 1;
+                    match_line.push('○');
+                } else {
+                    match_line.push('×');
+                }
+                match_line.push(' ');
+            }
+            lines.push(Line::from(format!("  {}", match_line)));
+        }
+        
+        let colemak_rate = if colemak_total_count > 0 {
+            ((colemak_perfect_count + colemak_partial_count) as f64 / colemak_total_count as f64) * 100.0
+        } else {
+            0.0
+        };
+        lines.push(Line::from(format!(
+            "→◎:{} ○:{} ×:{} | 一致率: {:.1}%",
+            colemak_perfect_count, colemak_partial_count, 
+            colemak_total_count - colemak_perfect_count - colemak_partial_count,
+            colemak_rate
+        )));
+        
+        // === 月配列類似詳細（キーごと採点） ===
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            "■ 月配列一致キー配置（キーごと採点）", 
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+        )));
+        
+        // 月配列2-236定義（直接定義）
+        let tsuki_layers = [
+            // Layer 0
+            [
+                ['そ', 'こ', 'し', 'て', 'ょ', 'つ', 'ん', 'い', 'の', 'り'],
+                ['は', 'か', '☆', 'と', 'た', 'く', 'う', '★', '゛', 'き'],
+                ['す', 'け', 'に', 'な', 'さ', 'っ', 'る', '、', '。', '゜'],
+            ],
+            // Layer 1（☆シフト）
+            [
+                ['ぁ', 'ひ', 'ほ', 'ふ', 'め', 'ぬ', 'え', 'み', 'や', 'ぇ'],
+                ['ぃ', 'を', 'ら', 'あ', 'よ', 'ま', 'お', 'も', 'わ', 'ゆ'],
+                ['ぅ', 'へ', 'せ', 'ゅ', 'ゃ', 'む', 'ろ', 'ね', 'ー', 'ぉ'],
+            ],
+            // Layer 2（★シフト） - 仮定義
+            [
+                ['　', '　', '　', '　', '　', '　', '　', '　', '　', '　'],
+                ['　', '　', '　', '　', '　', '　', '　', '　', '　', '　'],
+                ['　', '　', '　', '　', '　', '　', '　', '　', '　', '　'],
+            ],
+        ];
+        
+        let mut tsuki_match_count = 0;
+        let mut tsuki_total_count = 0;
+        
+        for layer in 0..2 {  // Layer0とLayer1のみ比較
+            let layer_name = match layer {
+                0 => "L0",
+                1 => "L1",
+                _ => "",
+            };
+            lines.push(Line::from(format!("{}:", layer_name)));
+            
+            for row in 0..3 {
+                let mut match_line = String::new();
+                for col in 0..10 {
+                    let kana = layers[layer][row][col];
+                    let tsuki_char = tsuki_layers[layer][row][col];
+                    
+                    // 記号・シフトキー・空白は除外
+                    if kana == '★' || kana == '☆' || kana == '、' || kana == '。' || kana == '　' || 
+                       tsuki_char == '★' || tsuki_char == '☆' || tsuki_char == '、' || tsuki_char == '。' || 
+                       tsuki_char == '゛' || tsuki_char == '゜' || tsuki_char == '　' {
+                        match_line.push_str("  ");
+                        continue;
+                    }
+                    
+                    tsuki_total_count += 1;
+                    
+                    if kana == tsuki_char {
+                        tsuki_match_count += 1;
+                        match_line.push('○');
+                    } else {
+                        match_line.push('×');
+                    }
+                    match_line.push(' ');
+                }
+                lines.push(Line::from(format!("  {}", match_line)));
+            }
+        }
+        
+        let tsuki_rate = if tsuki_total_count > 0 {
+            (tsuki_match_count as f64 / tsuki_total_count as f64) * 100.0
+        } else {
+            0.0
+        };
+        lines.push(Line::from(format!(
+            "→一致: {}/{} = {:.1}% (L0+L1のみ)",
+            tsuki_match_count, tsuki_total_count, tsuki_rate
+        )));
+        
+        // === Position Cost詳細 ===
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            "■ 位置コスト詳細", 
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+        )));
+        lines.push(Line::from("各レイヤーの高コストキー:"));
+        lines.push(Line::from("L0: 上段外側・下段外側がペナルティ"));
+        lines.push(Line::from("L1(☆): ☆キー(col7)上下+右小指側"));
+        lines.push(Line::from("L2(★): ★キー(col2)上下+左小指側"));
+        
+        // === Bonus Metrics 詳細 ===
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            "■ Bonus Metrics (加算)", 
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+        )));
+        
+        lines.push(Line::from(format!(
+            "リダイレクト: {:.1} × {:.1} = {:.1}",
+            s.redirect_low, w.redirect_low, s.redirect_low * w.redirect_low
+        )));
+        
+        lines.push(Line::from(format!(
+            "月類似: {:.1} × {:.1} = {:.1}",
+            s.tsuki_similarity, w.tsuki_similarity, s.tsuki_similarity * w.tsuki_similarity
+        )));
+        
+        lines.push(Line::from(format!(
+            "ロール: {:.2} × {:.1} = {:.1}",
+            s.roll, w.roll, s.roll * w.roll
+        )));
+        
+        lines.push(Line::from(format!(
+            "インロール: {:.2} × {:.1} = {:.1}",
+            s.inroll, w.inroll, s.inroll * w.inroll
+        )));
+        
+        lines.push(Line::from(format!(
+            "アルペジオ: {:.2} × {:.1} = {:.1}",
+            s.arpeggio, w.arpeggio, s.arpeggio * w.arpeggio
+        )));
+        
+        lines.push(Line::from(format!(
+            "覚えやすさ: {:.1} × {:.1} = {:.1}",
+            s.memorability, w.memorability, s.memorability * w.memorability
+        )));
+        
+        lines.push(Line::from(format!(
+            "シフトバランス: {:.1} × {:.1} = {:.1}",
+            s.shift_balance, w.shift_balance, s.shift_balance * w.shift_balance
+        )));
         
         let additive_bonus = s.redirect_low * w.redirect_low 
             + s.tsuki_similarity * w.tsuki_similarity
@@ -642,282 +849,41 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
         let bonus_scale = (w.redirect_low + w.tsuki_similarity + w.roll 
             + w.inroll + w.arpeggio + w.memorability + w.shift_balance) * 100.0;
         
-        left_lines.push(Line::from(""));
-        left_lines.push(Line::from(format!("→Bonus: {:.2}/{:.0}={:.4}",
-            additive_bonus, bonus_scale, additive_bonus/bonus_scale)));
+        lines.push(Line::from(""));
+        lines.push(Line::from(format!("→Bonus合計: {:.2}", additive_bonus)));
+        lines.push(Line::from(format!("→Scale: {:.0}", bonus_scale)));
+        lines.push(Line::from(format!("→比率: {:.4}", additive_bonus / bonus_scale)));
         
-        // 最終Fitness
+        // === 最終Fitness ===
         let final_fitness = core_mult * (1.0 + additive_bonus / bonus_scale);
-        left_lines.push(Line::from(""));
-        left_lines.push(Line::from(Span::styled(
-            format!("■ Final: {:.4}", final_fitness),
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            format!("■ Final Fitness: {:.4}", final_fitness),
             Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
         )));
-        left_lines.push(Line::from(format!("{:.2}×(1+{:.4})={:.4}",
-            core_mult, additive_bonus/bonus_scale, final_fitness)));
-        
-        // ========== 右カラム ==========
-        right_lines.push(Line::from(Span::styled(
-            "=== 位置コスト ===",
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
+        lines.push(Line::from(format!(
+            "{:.2} × (1 + {:.4}) = {:.4}",
+            core_mult, additive_bonus/bonus_scale, final_fitness
         )));
-        right_lines.push(Line::from(""));
-        
-        // 位置コスト詳細（2段表示：文字[頻度] / (コスト)）
-        use crate::layout::KeyPos;
-        
-        // 頻度マップを取得
-        let freq_map: std::collections::HashMap<char, f64> = if let Some(ref corpus) = state.corpus_stats {
-            corpus.char_freq.iter()
-                .map(|(ch, &freq)| (*ch, freq as f64))
-                .collect()
-        } else {
-            std::collections::HashMap::new()
-        };
-        
-        for layer in 0..3 {
-            let layer_name = match layer {
-                0 => "L0", 1 => "L1", 2 => "L2", _ => "",
-            };
-            right_lines.push(Line::from(format!("{}:", layer_name)));
-            
-            for row in 0..3 {
-                let mut row_line = String::new();
-                
-                for col in 0..10 {
-                    let kana = layers[layer][row][col];
-                    let pos = KeyPos::new(layer, row, col);
-                    let cost = calc_position_cost_for_key(&pos);
-                    
-                    // 頻度取得（1-gramから）
-                    let freq = freq_map.get(&kana).copied().unwrap_or(0.0);
-                    
-                    // 頻度を短く表示（k単位）
-                    let freq_str = if freq >= 10000.0 {
-                        format!("{}k", (freq / 1000.0) as i32)
-                    } else if freq >= 1000.0 {
-                        format!("{:.1}k", freq / 1000.0)
-                    } else if freq > 0.0 {
-                        format!("{}", freq as i32)
-                    } else {
-                        "0".to_string()
-                    };
-                    
-                    // コストをそのまま表示（1-99の範囲）
-                    let display_cost = (cost as i32).min(99);
-                    
-                    // 文字:頻度(コスト) 形式
-                    row_line.push_str(&format!("{}:{}({:>2}) ", kana, freq_str, display_cost));
-                }
-                
-                right_lines.push(Line::from(format!(" {}", row_line)));
-            }
-            right_lines.push(Line::from(""));
-        }
-        
-        right_lines.push(Line::from("L0: 上段外側・下段外側"));
-        right_lines.push(Line::from("L1: ☆(col7)上下Ver+27,Out+9"));
-        right_lines.push(Line::from("L2: ★(col2)上下Ver+27,Out+9"));
-        
-        // ========== 中央カラム: キーごと採点 ==========
-        center_lines.push(Line::from(Span::styled(
-            "=== キーごと採点 ===",
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-        )));
-        center_lines.push(Line::from(""));
-        
-        // Colemak採点（全3レイヤー）
-        center_lines.push(Line::from(Span::styled(
-            "■ Colemak (L0/L1/L2)",
-            Style::default().fg(Color::Yellow),
-        )));
-        
-        use crate::layout::{romaji_phonemes, COLEMAK_POSITIONS};
-        use std::collections::HashMap;
-        
-        let mut phoneme_pos: HashMap<&str, (usize, usize)> = HashMap::new();
-        for &(phoneme, row, col) in COLEMAK_POSITIONS {
-            phoneme_pos.insert(phoneme, (row, col));
-        }
-        
-        // 全3レイヤーを表示
-        for layer in 0..3 {
-            let layer_name = match layer {
-                0 => "L0:", 1 => "L1:", 2 => "L2:", _ => "",
-            };
-            center_lines.push(Line::from(layer_name));
-            
-            for row in 0..3 {
-                let mut match_line = String::new();
-                for col in 0..10 {
-                    let c = layers[layer][row][col];
-                    
-                    if c == '☆' || c == '★' || c == '、' || c == '。' || c == '　' ||
-                       c == 'ー' || c == 'っ' || c == 'ゃ' || c == 'ゅ' || c == 'ょ' ||
-                       c == 'ぁ' || c == 'ぃ' || c == 'ぅ' || c == 'ぇ' || c == 'ぉ' ||
-                       c == '゛' || c == '゜' {
-                        match_line.push_str("  ");
-                        continue;
-                    }
-                    
-                    let (consonant, vowel) = romaji_phonemes(c);
-                    if consonant.is_none() && vowel.is_none() {
-                        match_line.push_str("  ");
-                        continue;
-                    }
-                    
-                    let mut cons_score = 0.0;
-                    let mut vowel_score = 0.0;
-                    
-                    if let Some(cons) = consonant {
-                        if let Some(&(exp_row, exp_col)) = phoneme_pos.get(cons) {
-                            if row == exp_row && col == exp_col {
-                                cons_score = 1.0;
-                            } else if row == exp_row {
-                                cons_score = 0.5;
-                            } else if (col < 5 && exp_col < 5) || (col >= 5 && exp_col >= 5) {
-                                cons_score = 0.25;
-                            }
-                        }
-                    }
-                    
-                    if let Some(vow) = vowel {
-                        if let Some(&(exp_row, exp_col)) = phoneme_pos.get(vow) {
-                            if row == exp_row && col == exp_col {
-                                vowel_score = 1.0;
-                            } else if row == exp_row {
-                                vowel_score = 0.5;
-                            } else if (col < 5 && exp_col < 5) || (col >= 5 && exp_col >= 5) {
-                                vowel_score = 0.25;
-                            }
-                        }
-                    }
-                    
-                    // 音素の種類で判定を分岐
-                    let is_vowel_only = consonant.is_none() && vowel.is_some();
-                    let is_consonant_only = consonant.is_some() && vowel.is_none();
-                    
-                    if is_vowel_only {
-                        // 母音のみ（あいうえお）：完全一致なら◎、行一致以上で○
-                        if vowel_score >= 1.0 {
-                            match_line.push('◎');
-                        } else if vowel_score >= 0.5 {
-                            match_line.push('○');
-                        } else {
-                            match_line.push('×');
-                        }
-                    } else if is_consonant_only {
-                        // 子音のみ（ん）：完全一致なら◎、行一致以上で○
-                        if cons_score >= 1.0 {
-                            match_line.push('◎');
-                        } else if cons_score >= 0.5 {
-                            match_line.push('○');
-                        } else {
-                            match_line.push('×');
-                        }
-                    } else {
-                        // 子音+母音：両方完全一致で◎、どちらか完全一致で○
-                        let has_perfect_match = cons_score >= 1.0 || vowel_score >= 1.0;
-                        let total_score = cons_score + vowel_score;
-                        
-                        if total_score >= 1.8 {
-                            match_line.push('◎');
-                        } else if has_perfect_match {
-                            match_line.push('○');
-                        } else {
-                            match_line.push('×');
-                        }
-                    }
-                    match_line.push(' ');
-                }
-                center_lines.push(Line::from(format!(" {}", match_line)));
-            }
-            center_lines.push(Line::from(""));
-        }
-        
-        // 月配列採点
-        center_lines.push(Line::from(""));
-        center_lines.push(Line::from(Span::styled(
-            "■ 月配列 (L0+L1)",
-            Style::default().fg(Color::Yellow),
-        )));
-        
-        let tsuki_layers = [
-            [
-                ['そ', 'こ', 'し', 'て', 'ょ', 'つ', 'ん', 'い', 'の', 'り'],
-                ['は', 'か', '☆', 'と', 'た', 'く', 'う', '★', '゛', 'き'],
-                ['す', 'け', 'に', 'な', 'さ', 'っ', 'る', '、', '。', '゜'],
-            ],
-            [
-                ['ぁ', 'ひ', 'ほ', 'ふ', 'め', 'ぬ', 'え', 'み', 'や', 'ぇ'],
-                ['ぃ', 'を', 'ら', 'あ', 'よ', 'ま', 'お', 'も', 'わ', 'ゆ'],
-                ['ぅ', 'へ', 'せ', 'ゅ', 'ゃ', 'む', 'ろ', 'ね', 'ー', 'ぉ'],
-            ],
-        ];
-        
-        for layer in 0..2 {
-            let layer_name = match layer {
-                0 => "L0", 1 => "L1", _ => "",
-            };
-            center_lines.push(Line::from(format!("{}:", layer_name)));
-            
-            for row in 0..3 {
-                let mut match_line = String::new();
-                for col in 0..10 {
-                    let kana = layers[layer][row][col];
-                    let tsuki_char = tsuki_layers[layer][row][col];
-                    
-                    if kana == '★' || kana == '☆' || kana == '、' || kana == '。' || kana == '　' ||
-                       tsuki_char == '★' || tsuki_char == '☆' || tsuki_char == '、' || tsuki_char == '。' ||
-                       tsuki_char == '゛' || tsuki_char == '゜' || tsuki_char == '　' {
-                        match_line.push_str("  ");
-                        continue;
-                    }
-                    
-                    if kana == tsuki_char {
-                        match_line.push('○');
-                    } else {
-                        match_line.push('×');
-                    }
-                    match_line.push(' ');
-                }
-                center_lines.push(Line::from(format!(" {}", match_line)));
-            }
-        }
         
     } else {
-        left_lines.push(Line::from("計算中..."));
-        center_lines.push(Line::from("計算中..."));
-        right_lines.push(Line::from("計算中..."));
+        lines.push(Line::from("計算中..."));
     }
     
-    // 左カラム描画
-    let left_para = Paragraph::new(left_lines)
-        .block(Block::default()
-            .title("L: Scores+計算式")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Green)))
-        .wrap(Wrap { trim: false });
-    f.render_widget(left_para, columns[0]);
+    let paragraph = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .title("★ Debug Panel (全計算過程) ★")
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Magenta)),
+        )
+        .wrap(Wrap { trim: false })
+        .scroll((0, 0));
     
-    // 中央カラム描画
-    let center_para = Paragraph::new(center_lines)
-        .block(Block::default()
-            .title("C: キーごと採点")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan)))
-        .wrap(Wrap { trim: false });
-    f.render_widget(center_para, columns[1]);
-    
-    // 右カラム描画
-    let right_para = Paragraph::new(right_lines)
-        .block(Block::default()
-            .title("R: 位置コスト")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Yellow)))
-        .wrap(Wrap { trim: false });
-    f.render_widget(right_para, columns[2]);
+    f.render_widget(paragraph, area);
 }
+
+/// スコア詳細と重みを描画
 fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
     let layout = match &state.best_layout {
         Some(l) => l,
@@ -950,9 +916,7 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
     )));
     
     // 月配列一致率の詳細計算
-    let (l0_m, l0_t, l1_m, l1_t, l2_m, l2_t) = calc_tsuki_match_detail(&layout.layers);
-    let tsuki_match = l0_m + l1_m + l2_m;
-    let tsuki_total = l0_t + l1_t + l2_t;
+    let (tsuki_match, tsuki_total) = calc_tsuki_match_detail(&layout.layers);
     lines.push(Line::from(format!(
         "月配列:     {:.1}% (○{} ×{})",
         s.tsuki_similarity, tsuki_match, tsuki_total - tsuki_match

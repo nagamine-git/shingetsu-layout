@@ -4,6 +4,7 @@
 
 mod corpus;
 mod evaluation;
+mod export;
 mod ga;
 mod layout;
 mod tui;
@@ -51,6 +52,10 @@ struct Args {
     /// 世代数
     #[arg(short, long, default_value_t = 1000)]
     generations: usize,
+    
+    /// デバッグパネル表示（全計算過程）
+    #[arg(long, default_value_t = false)]
+    debug: bool,
 
     /// 突然変異率
     #[arg(short, long, default_value_t = 0.25)]
@@ -115,8 +120,8 @@ struct Args {
     #[arg(long, default_value_t = 2.0)]
     w_tsuki_similarity: f64,
 
-    /// Weight: 位置別コスト（Core昇格）
-    #[arg(long, default_value_t = 1.2)]
+    /// Weight: 位置別コスト（Core昇格・最強）
+    #[arg(long, default_value_t = 2.5)]
     w_position_cost: f64,
 
     /// Weight: ロール率（アルペジオ調和15%）
@@ -193,13 +198,13 @@ fn main() {
     if args.multi_run > 0 {
         // マルチラン実行
         if args.tui && atty::is(atty::Stream::Stdout) {
-            run_multi_with_tui(&corpus, config, weights, args.multi_run, &args.output);
+            run_multi_with_tui(&corpus, config, weights, args.multi_run, &args.output, args.debug);
         } else {
             run_multi(&corpus, config, weights, args.multi_run, &args.output);
         }
     } else if args.tui && atty::is(atty::Stream::Stdout) {
         // TUIモード（単一実行）
-        run_with_tui(&corpus, config, weights, &args.output);
+            run_with_tui(&corpus, config, weights, &args.output, args.debug);
     } else {
         // 通常実行（プログレスバー）
         run_single(&corpus, config, weights, &args.output);
@@ -302,10 +307,11 @@ fn run_single(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeights
 }
 
 /// TUIモードで実行
-fn run_with_tui(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeights, output: &PathBuf) {
+fn run_with_tui(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeights, output: &PathBuf, debug: bool) {
     use crate::tui::{run_tui_thread, TuiState};
 
-    let state = Arc::new(Mutex::new(TuiState::new(config.generations)));
+    let corpus_arc = Arc::new(corpus.clone());
+    let state = Arc::new(Mutex::new(TuiState::new_with_debug(config.generations, debug, Some(Arc::clone(&corpus_arc)))));
     
     // 重みを設定
     {
@@ -426,6 +432,7 @@ fn run_multi_with_tui(
     weights: EvaluationWeights,
     num_runs: usize,
     output: &PathBuf,
+    debug: bool,
 ) {
     use crate::tui::{run_tui_thread, TuiState};
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -433,7 +440,8 @@ fn run_multi_with_tui(
     let actual_runs = num_runs.min(num_cpus::get());
     
     // 共有状態
-    let state = Arc::new(Mutex::new(TuiState::new(config.generations)));
+    let corpus_arc = Arc::new(corpus.clone());
+    let state = Arc::new(Mutex::new(TuiState::new_with_debug(config.generations, debug, Some(Arc::clone(&corpus_arc)))));
     
     // 重みを設定
     {
@@ -587,21 +595,9 @@ fn print_scores(layout: &Layout, weights: &EvaluationWeights) {
     println!("  シフトバランス: {:.2} x {:.1}  (1 - |Layer1頻度 - Layer2頻度|)", s.shift_balance, w.shift_balance);
 }
 
-/// 配列をJSONファイルに保存
+/// 配列を複数形式でエクスポート
 fn save_layout(layout: &Layout, path: &PathBuf) {
-    let json = serde_json::json!({
-        "name": "GA Optimized Layout",
-        "fitness": layout.fitness,
-        "scores": layout.scores,
-        "layers": {
-            "no_shift": layout.layers[0],
-            "shift_a": layout.layers[1],
-            "shift_b": layout.layers[2],
-        }
-    });
-
-    match std::fs::write(path, serde_json::to_string_pretty(&json).unwrap()) {
-        Ok(_) => println!("\n配列を保存: {:?}", path),
-        Err(e) => eprintln!("\n保存エラー: {}", e),
-    }
+    println!("\n配列をエクスポート中...");
+    export::export_all(layout, path.to_str().unwrap_or("best_layout.json"));
+    println!("エクスポート完了");
 }
