@@ -33,6 +33,9 @@ crossterm = "0.28"
 # TTY detection
 atty = "0.2"
 
+# Signal handling
+ctrlc = "3.4"
+
 [profile.release]
 lto = true
 codegen-units = 1

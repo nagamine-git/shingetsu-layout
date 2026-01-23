@@ -276,6 +276,22 @@ fn run_with_tui(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeigh
     let state = Arc::new(Mutex::new(TuiState::new(config.generations)));
     let tui_state = Arc::clone(&state);
     
+    // Ctrl+C ハンドラ設定（途中停止時も結果保存）
+    let state_for_signal = Arc::clone(&state);
+    let output_for_signal = output.clone();
+    ctrlc::set_handler(move || {
+        let s = state_for_signal.lock().unwrap();
+        if let Some(ref best_layout) = s.best_layout {
+            println!("\n\n中断されました。現在の最良結果を保存中...");
+            save_layout(best_layout, &output_for_signal);
+            println!("最良フィットネス: {:.4}", s.best_fitness);
+            std::process::exit(0);
+        } else {
+            println!("\n\n中断されました（保存する結果がありません）");
+            std::process::exit(1);
+        }
+    }).expect("Ctrl+Cハンドラ設定失敗");
+    
     // TUIスレッド開始
     let tui_handle = run_tui_thread(tui_state);
 

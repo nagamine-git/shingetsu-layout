@@ -129,6 +129,9 @@ impl CorpusStats {
             }
         }
 
+        // 記号（;・）を最低頻度として追加
+        stats.add_symbol_chars();
+
         Ok(stats)
     }
 
@@ -182,6 +185,9 @@ impl CorpusStats {
         hiragana_freq.sort_by(|a, b| b.1.cmp(&a.1));
         stats.hiragana_by_freq = hiragana_freq.into_iter().map(|(c, _)| c).collect();
 
+        // 記号（;・）を最低頻度として追加
+        stats.add_symbol_chars();
+        
         stats
     }
 
@@ -189,6 +195,18 @@ impl CorpusStats {
     pub fn from_text_file(path: &Path) -> Result<Self, std::io::Error> {
         let content = std::fs::read_to_string(path)?;
         Ok(Self::from_text(&content))
+    }
+    
+    /// 記号文字（;・）をコーパスに追加（評価用、配置対象外）
+    fn add_symbol_chars(&mut self) {
+        // Layer 1固定記号をchar_freqに追加（評価で使用）
+        for &c in &['；', '・'] {
+            if !self.char_freq.contains_key(&c) {
+                self.char_freq.insert(c, 1);
+            }
+        }
+        
+        // hiragana_by_freqには追加しない（固定位置なので配置対象外）
     }
 
     /// コーパスの総文字数

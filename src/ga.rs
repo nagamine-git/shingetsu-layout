@@ -106,15 +106,22 @@ impl GeneticAlgorithm {
     where
         F: FnMut(usize, f64, &Layout),
     {
-        // 初期集団の生成（コーパスから取得した頻度順リストを使用）
-        let mut population: Vec<Layout> = (0..self.config.population_size)
-            .map(|_| {
-                let mut layout = Layout::random_with_chars(&mut self.rng, &self.hiragana_chars);
-                self.repair_layout(&mut layout);  // 重複除去
-                self.evaluator.evaluate(&mut layout);
-                layout
-            })
-            .collect();
+        // 初期集団の生成（1つは改善版カスタムレイアウト、残りはランダム）
+        let mut population: Vec<Layout> = Vec::with_capacity(self.config.population_size);
+        
+        // 最初の1つは改善版カスタムレイアウト
+        let mut custom_layout = Layout::improved_custom();
+        self.repair_layout(&mut custom_layout);
+        self.evaluator.evaluate(&mut custom_layout);
+        population.push(custom_layout);
+        
+        // 残りはランダム生成
+        for _ in 1..self.config.population_size {
+            let mut layout = Layout::random_with_chars(&mut self.rng, &self.hiragana_chars);
+            self.repair_layout(&mut layout);
+            self.evaluator.evaluate(&mut layout);
+            population.push(layout);
+        }
 
         // フィットネスでソート（降順）
         population.sort_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
@@ -268,7 +275,8 @@ impl GeneticAlgorithm {
             for row in 0..ROWS {
                 for col in 0..COLS {
                     let c = layout.layers[layer][row][col];
-                    if c == '☆' || c == '★' || c == '、' || c == '。' || c == '　' || c == '\0' {
+                    // 固定位置の記号をスキップ
+                    if c == '☆' || c == '★' || c == '、' || c == '。' || c == '；' || c == '・' || c == '　' || c == '\0' {
                         continue;
                     }
 

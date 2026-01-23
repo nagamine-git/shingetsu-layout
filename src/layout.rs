@@ -176,6 +176,38 @@ impl Default for Layout {
 }
 
 impl Layout {
+    /// 改善版カスタムレイアウト（初期配置として使用）
+    pub fn improved_custom() -> Self {
+        let mut layers = [[['　'; COLS]; ROWS]; NUM_LAYERS];
+        
+        // Layer 0 (No Shift) - 高頻度文字最適化
+        layers[0] = [
+            ['れ', 'た', 'な', 'に', 'お', 'ち', 'は', 'と', 'こ', 'を'],
+            ['か', 'し', '☆', 'う', 'が', 'く', 'ん', '★', 'い', 'の'],
+            ['あ', 'で', 'き', 'て', 'だ', 'っ', 'る', '、', '。', 'さ'],
+        ];
+        
+        // Layer 1 (☆シフト) - ;・を固定位置に
+        layers[1] = [
+            ['ぷ', 'そ', 'み', 'ゃ', 'へ', 'ぽ', 'ふ', 'ょ', 'ぁ', 'わ'],
+            ['け', 'つ', 'ら', 'す', 'ね', 'ぶ', 'め', 'ぐ', 'び', 'づ'],
+            ['ぼ', 'ぎ', 'ほ', 'え', 'ぃ', 'ざ', 'ご', '；', '・', 'ぢ'],
+        ];
+        
+        // Layer 2 (★シフト)
+        layers[2] = [
+            ['ぉ', 'ぴ', 'ぅ', 'ば', 'ぜ', 'ぱ', 'ひ', 'よ', 'ゅ', 'べ'],
+            ['ぇ', 'ず', 'げ', 'ま', 'ろ', 'や', 'じ', 'も', 'り', 'せ'],
+            ['ぺ', 'ぬ', 'ど', 'ぞ', 'む', 'ぶ', 'ゆ', 'ー', 'ゃ', '　'],
+        ];
+        
+        Self {
+            layers,
+            fitness: 0.0,
+            scores: EvaluationScores::default(),
+        }
+    }
+    
     /// ランダムな配列を生成（デフォルト頻度リスト使用）
     pub fn random(rng: &mut ChaCha8Rng) -> Self {
         Self::random_with_chars(rng, HIRAGANA_FREQ_DEFAULT)
@@ -208,9 +240,9 @@ impl Layout {
         layers[0][2][7] = '、';
         layers[0][2][8] = '。';
         
-        // Layer 2: 記号
-        layers[2][2][7] = '；';  // セミコロン
-        layers[2][2][8] = '・';  // 中黒
+        // Layer 1（☆シフト）: 記号
+        layers[1][2][7] = '；';  // セミコロン
+        layers[1][2][8] = '・';  // 中黒
         
         // 残りの文字をシャッフルして配置
         let mut char_idx = 0;
@@ -244,8 +276,8 @@ impl Layout {
         if layer == 0 && row == 2 && (col == 7 || col == 8) {
             return true;
         }
-        // Layer 2：記号（;・）
-        if layer == 2 && row == 2 && (col == 7 || col == 8) {
+        // Layer 1（☆シフト）：記号（;・）
+        if layer == 1 && row == 2 && (col == 7 || col == 8) {
             return true;
         }
         false
