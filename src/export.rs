@@ -5,6 +5,7 @@
 use crate::layout::{Layout, COLS, ROWS};
 use std::collections::HashMap;
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// QWERTYキーボードの物理キー配列
 const QWERTY_KEYS: [[&str; 10]; 3] = [
@@ -90,20 +91,27 @@ pub fn export_all(layout: &Layout, base_name: &str) {
         .unwrap_or("layout");
     let parent = base_path.parent().unwrap_or(Path::new("."));
 
+    // タイムスタンプを生成（UNIXエポックからの秒数）
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let stem_with_timestamp = format!("{}_{}", stem, timestamp);
+
     // 1. JSON (best_layout.json形式)
-    export_json(layout, &parent.join(format!("{}.json", stem)));
+    export_json(layout, &parent.join(format!("{}.json", stem_with_timestamp)));
 
     // 2. keyboard_analyzer用JSON
-    export_analyzer_json(layout, &parent.join(format!("{}_analyzer.json", stem)));
+    export_analyzer_json(layout, &parent.join(format!("{}_analyzer.json", stem_with_timestamp)));
 
     // 3. hazkey TSV (QWERTY)
-    export_tsv(layout, &parent.join(format!("{}-ansi.tsv", stem)), false);
+    export_tsv(layout, &parent.join(format!("{}-ansi.tsv", stem_with_timestamp)), false);
 
     // 4. hazkey TSV (Colemak)
-    export_tsv(layout, &parent.join(format!("{}-ansi-colemak.tsv", stem)), true);
+    export_tsv(layout, &parent.join(format!("{}-ansi-colemak.tsv", stem_with_timestamp)), true);
 
     // 5. Karabiner JSON
-    export_karabiner(layout, &parent.join(format!("{}-karabiner.json", stem)));
+    export_karabiner(layout, &parent.join(format!("{}-karabiner.json", stem_with_timestamp)));
 }
 
 /// JSON形式でエクスポート（既存形式）
@@ -358,7 +366,7 @@ pub fn export_tsv(layout: &Layout, path: &Path, colemak: bool) {
     lines.push("".to_string());
 
     // ☆シフト (Layer 1)
-    lines.push(format!("# ☆シフト ({}同時押し)", circle_key));
+    lines.push(format!("# ☆シフト ({}前置)", circle_key));
     for row in 0..ROWS {
         for col in 0..COLS {
             let kana = layout.layers[1][row][col];
@@ -372,7 +380,7 @@ pub fn export_tsv(layout: &Layout, path: &Path, colemak: bool) {
     lines.push("".to_string());
 
     // ★シフト (Layer 2)
-    lines.push(format!("# ★シフト ({}同時押し)", star_key));
+    lines.push(format!("# ★シフト ({}前置)", star_key));
     for row in 0..ROWS {
         for col in 0..COLS {
             let kana = layout.layers[2][row][col];
