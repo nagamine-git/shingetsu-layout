@@ -581,36 +581,26 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
             "=== Core Metrics ===",
             Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
         )));
-        
-        // Core計算式（簡略版）
-        left_lines.push(Line::from(format!("SFB: {:.1}%^{:.1}={:.3}",
+
+        // Core計算式（基本5指標のみ）
+        left_lines.push(Line::from(format!("同指連続低: {:.1}%^{:.1}={:.3}",
             s.same_finger, w.same_finger, (s.same_finger/100.0).powf(w.same_finger))));
-        left_lines.push(Line::from(format!("LSB: {:.1}%^{:.1}={:.3}",
+        left_lines.push(Line::from(format!("段越え低: {:.1}%^{:.1}={:.3}",
             s.row_skip, w.row_skip, (s.row_skip/100.0).powf(w.row_skip))));
-        left_lines.push(Line::from(format!("ホーム: {:.1}%^{:.1}={:.3}",
+        left_lines.push(Line::from(format!("ホーム率: {:.1}%^{:.1}={:.3}",
             s.home_position, w.home_position, (s.home_position/100.0).powf(w.home_position))));
-        left_lines.push(Line::from(format!("打鍵: {:.1}%^{:.1}={:.3}",
+        left_lines.push(Line::from(format!("打鍵少: {:.1}%^{:.1}={:.3}",
             s.total_keystrokes, w.total_keystrokes, (s.total_keystrokes/100.0).powf(w.total_keystrokes))));
-        left_lines.push(Line::from(format!("交互: {:.1}%^{:.1}={:.3}",
+        left_lines.push(Line::from(format!("左右交互: {:.1}%^{:.1}={:.3}",
             s.alternating, w.alternating, (s.alternating/100.0).powf(w.alternating))));
-        left_lines.push(Line::from(format!("単打: {:.1}%^{:.1}={:.3}",
-            s.single_key, w.single_key, (s.single_key/100.0).powf(w.single_key))));
-        left_lines.push(Line::from(format!("Colemak: {:.1}%^{:.1}={:.3}",
-            s.colemak_similarity, w.colemak_similarity, (s.colemak_similarity/100.0).powf(w.colemak_similarity))));
-        left_lines.push(Line::from(format!("位置: {:.1}%^{:.1}={:.3}",
-            s.position_cost, w.position_cost, (s.position_cost/100.0).powf(w.position_cost))));
-        
+
         let core_product = (s.same_finger/100.0).powf(w.same_finger)
             * (s.row_skip/100.0).powf(w.row_skip)
             * (s.home_position/100.0).powf(w.home_position)
             * (s.total_keystrokes/100.0).powf(w.total_keystrokes)
-            * (s.alternating/100.0).powf(w.alternating)
-            * (s.single_key/100.0).powf(w.single_key)
-            * (s.colemak_similarity/100.0).powf(w.colemak_similarity)
-            * (s.position_cost/100.0).powf(w.position_cost);
-        let total_weight = w.same_finger + w.row_skip + w.home_position 
-            + w.total_keystrokes + w.alternating + w.single_key 
-            + w.colemak_similarity + w.position_cost;
+            * (s.alternating/100.0).powf(w.alternating);
+        let total_weight = w.same_finger + w.row_skip + w.home_position
+            + w.total_keystrokes + w.alternating;
         let core_mult = core_product.powf(1.0 / total_weight) * 100.0;
         
         left_lines.push(Line::from(""));
@@ -622,24 +612,39 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
             "=== Bonus ===",
             Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
         )));
-        left_lines.push(Line::from(format!("リダイレクト: {:.1}×{:.1}={:.1}",
+        left_lines.push(Line::from(format!("単打率: {:.1}×{:.1}={:.1}",
+            s.single_key, w.single_key, s.single_key * w.single_key)));
+        left_lines.push(Line::from(format!("Colemak: {:.1}×{:.1}={:.1}",
+            s.colemak_similarity, w.colemak_similarity, s.colemak_similarity * w.colemak_similarity)));
+        left_lines.push(Line::from(format!("位置コスト: {:.1}×{:.1}={:.1}",
+            s.position_cost, w.position_cost, s.position_cost * w.position_cost)));
+        left_lines.push(Line::from(format!("リダイレクト低: {:.1}×{:.1}={:.1}",
             s.redirect_low, w.redirect_low, s.redirect_low * w.redirect_low)));
         left_lines.push(Line::from(format!("月類似: {:.1}×{:.1}={:.1}",
             s.tsuki_similarity, w.tsuki_similarity, s.tsuki_similarity * w.tsuki_similarity)));
-        left_lines.push(Line::from(format!("ロール: {:.2}×{:.1}={:.1}",
+        left_lines.push(Line::from(format!("ロール: {:.1}×{:.1}={:.1}",
             s.roll, w.roll, s.roll * w.roll)));
-        left_lines.push(Line::from(format!("インロール: {:.2}×{:.1}={:.1}",
+        left_lines.push(Line::from(format!("インロール: {:.1}×{:.1}={:.1}",
             s.inroll, w.inroll, s.inroll * w.inroll)));
-        left_lines.push(Line::from(format!("アルペジオ: {:.2}×{:.1}={:.1}",
+        left_lines.push(Line::from(format!("アルペジオ: {:.1}×{:.1}={:.1}",
             s.arpeggio, w.arpeggio, s.arpeggio * w.arpeggio)));
-        
-        let additive_bonus = s.redirect_low * w.redirect_low 
+        left_lines.push(Line::from(format!("覚えやすさ: {:.1}×{:.1}={:.1}",
+            s.memorability, w.memorability, s.memorability * w.memorability)));
+        left_lines.push(Line::from(format!("シフトバランス: {:.1}×{:.1}={:.1}",
+            s.shift_balance, w.shift_balance, s.shift_balance * w.shift_balance)));
+
+        let additive_bonus = s.single_key * w.single_key
+            + s.colemak_similarity * w.colemak_similarity
+            + s.position_cost * w.position_cost
+            + s.redirect_low * w.redirect_low
             + s.tsuki_similarity * w.tsuki_similarity
-            + s.roll * w.roll + s.inroll * w.inroll 
+            + s.roll * w.roll
+            + s.inroll * w.inroll
             + s.arpeggio * w.arpeggio
-            + s.memorability * w.memorability 
+            + s.memorability * w.memorability
             + s.shift_balance * w.shift_balance;
-        let bonus_scale = (w.redirect_low + w.tsuki_similarity + w.roll 
+        let bonus_scale = (w.single_key + w.colemak_similarity + w.position_cost
+            + w.redirect_low + w.tsuki_similarity + w.roll
             + w.inroll + w.arpeggio + w.memorability + w.shift_balance) * 100.0;
         
         left_lines.push(Line::from(""));
@@ -961,7 +966,7 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
 
     lines.push(Line::from(""));
     lines.push(Line::from(Span::styled(
-        "=== Core Metrics ===",
+        "=== Core Metrics (乗算) ===",
         Style::default()
             .fg(Color::Yellow)
             .add_modifier(Modifier::BOLD),
@@ -969,37 +974,57 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
 
     if let Some(weights) = w {
         lines.push(Line::from(format!(
-            "同指連続低: {:.1}% ^{:.2} (1-SFB/bigram)",
+            "同指連続低: {:.1}% ^{:.1}",
             s.same_finger, weights.same_finger
         )));
         lines.push(Line::from(format!(
-            "左右交互:   {:.1}% ^{:.2} (交互/bigram)",
-            s.alternating, weights.alternating
+            "段越え低:   {:.1}% ^{:.1}",
+            s.row_skip, weights.row_skip
         )));
         lines.push(Line::from(format!(
-            "単打鍵率:   {:.1}% ^{:.2} (L0freq/全freq)",
-            s.single_key, weights.single_key
+            "ホーム率:   {:.1}% ^{:.1}",
+            s.home_position, weights.home_position
+        )));
+        lines.push(Line::from(format!(
+            "打鍵少:     {:.1}% ^{:.1}",
+            s.total_keystrokes, weights.total_keystrokes
+        )));
+        lines.push(Line::from(format!(
+            "左右交互:   {:.1}% ^{:.1}",
+            s.alternating, weights.alternating
         )));
 
         lines.push(Line::from(""));
         lines.push(Line::from(Span::styled(
-            "=== Bonus ===",
+            "=== Bonus (加算) ===",
             Style::default()
                 .fg(Color::Cyan)
                 .add_modifier(Modifier::BOLD),
         )));
 
         lines.push(Line::from(format!(
-            "ロール:     {:.1} x{:.1} (roll/同手bigram)",
+            "単打率:     {:.1}% ×{:.1}",
+            s.single_key, weights.single_key
+        )));
+        lines.push(Line::from(format!(
+            "位置コスト: {:.1}% ×{:.1}",
+            s.position_cost, weights.position_cost
+        )));
+        lines.push(Line::from(format!(
+            "ロール:     {:.1}% ×{:.1}",
             s.roll, weights.roll
         )));
         lines.push(Line::from(format!(
-            "インロール: {:.1} x{:.1} (inroll/roll)",
+            "インロール: {:.1}% ×{:.1}",
             s.inroll, weights.inroll
         )));
         lines.push(Line::from(format!(
-            "アルペジオ: {:.1} x{:.1} (arpeggio/bigram)",
+            "アルペジオ: {:.1}% ×{:.1}",
             s.arpeggio, weights.arpeggio
+        )));
+        lines.push(Line::from(format!(
+            "リダイレクト低: {:.1}% ×{:.1}",
+            s.redirect_low, weights.redirect_low
         )));
     } else {
         lines.push(Line::from("重み情報なし"));
