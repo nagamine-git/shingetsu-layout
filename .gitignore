@@ -32,3 +32,6 @@ Thumbs.db
 # Added by cargo
 
 /target
+
+# Rust build artifacts (rustc)
+/test_sample
