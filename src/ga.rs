@@ -8,7 +8,7 @@ use rayon::prelude::*;
 
 use crate::corpus::CorpusStats;
 use crate::evaluation::{EvaluationWeights, Evaluator};
-use crate::layout::{Layout, NUM_LAYERS, ROWS, cols_for_row, HIRAGANA_FREQ_DEFAULT};
+use crate::layout::{Layout, NUM_LAYERS, ROWS, cols_for_row, get_position_cost, HIRAGANA_FREQ_DEFAULT};
 
 /// 遺伝的アルゴリズムの設定
 #[derive(Debug, Clone)]
@@ -158,15 +158,15 @@ impl GeneticAlgorithm {
 
     /// 最適化を実行
     pub fn run(&mut self) -> GaResult {
-        self.run_with_callback(|_, _, _| {})
+        self.run_with_callback(|_, _, _, _| {})
     }
 
     /// コールバック付きで最適化を実行
-    /// 
-    /// コールバック: `fn(generation: usize, best_fitness: f64, best_layout: &Layout)`
+    ///
+    /// コールバック: `fn(generation: usize, best_fitness: f64, best_layout: &Layout, second_best: Option<(f64, &Layout)>)`
     pub fn run_with_callback<F>(&mut self, mut callback: F) -> GaResult
     where
-        F: FnMut(usize, f64, &Layout),
+        F: FnMut(usize, f64, &Layout, Option<(f64, &Layout)>),
     {
         // 初期集団の生成（1つは改善版カスタムレイアウト、残りはランダム）
         let mut population: Vec<Layout> = Vec::with_capacity(self.config.population_size);
@@ -175,6 +175,13 @@ impl GeneticAlgorithm {
         let mut custom_layout = Layout::improved_custom();
         self.repair_layout(&mut custom_layout);
         self.evaluator.evaluate(&mut custom_layout);
+
+        // Baseline制約を設定: この配列の位置コストと打鍵数を下回る候補は不可
+        self.evaluator.set_baseline(
+            custom_layout.scores.position_cost,
+            custom_layout.scores.total_keystrokes
+        );
+
         population.push(custom_layout);
         
         // 残りはランダム生成
@@ -194,7 +201,12 @@ impl GeneticAlgorithm {
         let mut fitness_history = Vec::with_capacity(self.config.generations);
 
         fitness_history.push(best_fitness);
-        callback(0, best_fitness, &best_layout);
+        let second_best = if population.len() >= 2 {
+            Some((population[1].fitness, &population[1]))
+        } else {
+            None
+        };
+        callback(0, best_fitness, &best_layout, second_best);
 
         // 世代ループ
         for gen in 1..=self.config.generations {
@@ -237,7 +249,12 @@ impl GeneticAlgorithm {
             }
 
             fitness_history.push(best_fitness);
-            callback(gen, best_fitness, &best_layout);
+            let second_best = if population.len() >= 2 {
+                Some((population[1].fitness, &population[1]))
+            } else {
+                None
+            };
+            callback(gen, best_fitness, &best_layout, second_best);
         }
 
         // 最終結果の重複チェックと再評価
@@ -298,16 +315,28 @@ impl GeneticAlgorithm {
 
     /// 突然変異（2つの位置をスワップ）
     fn mutate(&mut self, layout: &mut Layout) {
-        // ランダムな非固定位置を2つ選択してスワップ
-        // 空白位置（シフト制限）もスワップから除外
-        let mut positions: Vec<(usize, usize, usize)> = Vec::new();
+        use crate::layout::get_position_cost;
+
+        // 位置コスト + 文字出現頻度の両方を考慮したスワップ
+        // 各位置に位置コスト、文字、文字の出現頻度を付与
+        let mut positions: Vec<(usize, usize, usize, f64, String, f64)> = Vec::new();
+
         for l in 0..NUM_LAYERS {
             for r in 0..ROWS {
                 let cols = cols_for_row(r);
                 for c in 0..cols {
                     // 固定位置と空白位置はスワップ禁止
                     if !Layout::is_fixed_position(l, r, c) && !Layout::is_blank_position(l, r, c) {
-                        positions.push((l, r, c));
+                        let cost = get_position_cost(l, r, c);
+                        let kana_str = layout.layers[l][r][c].clone();
+
+                        // 文字列の出現頻度を取得（1gram + 2gram拗音を統合）
+                        let freq = self.evaluator.corpus.string_freq
+                            .get(&kana_str)
+                            .copied()
+                            .unwrap_or(0) as f64;
+
+                        positions.push((l, r, c, cost, kana_str, freq));
                     }
                 }
             }
@@ -315,14 +344,54 @@ impl GeneticAlgorithm {
 
         if positions.len() >= 2 {
             let idx1 = self.rng.gen_range(0..positions.len());
-            let idx2 = self.rng.gen_range(0..positions.len());
+            let (l1, r1, c1, cost1, _kana1, freq1) = &positions[idx1];
 
-            if idx1 != idx2 {
-                let (l1, r1, c1) = positions[idx1];
-                let (l2, r2, c2) = positions[idx2];
+            // スワップ制約を極端に厳格化：初期配列からほとんど動かさない
+            // 位置コスト±0.1以内 & 頻度±10%以内のみスワップ可能
+            // これにより初期配列の構造が維持される
+            let constraints = [
+                (0.1, 0.1),      // 極めて厳格
+            ];
+            let mut candidates: Vec<usize> = Vec::new();
 
-                let tmp = layout.layers[l1][r1][c1].clone();
-                layout.layers[l1][r1][c1] = layout.layers[l2][r2][c2].clone();
+            for &(cost_tolerance, freq_tolerance) in &constraints {
+                candidates = positions.iter().enumerate()
+                    .filter(|(idx, (_, _, _, cost2, _, freq2))| {
+                        if *idx == idx1 {
+                            return false;
+                        }
+
+                        // 位置コスト制約: cost_toleranceの範囲内
+                        let cost_ok = (*cost1 - cost2).abs() <= cost_tolerance;
+
+                        // 出現頻度制約: freq_toleranceの範囲内（両方が0なら制約なし）
+                        let freq_ok = if *freq1 == 0.0 && *freq2 == 0.0 {
+                            true
+                        } else if *freq1 > 0.0 && *freq2 > 0.0 {
+                            let ratio = freq2 / freq1;
+                            ratio >= (1.0 - freq_tolerance) && ratio <= (1.0 + freq_tolerance)
+                        } else {
+                            false  // 片方だけ0の場合は不許可
+                        };
+
+                        cost_ok && freq_ok
+                    })
+                    .map(|(idx, _)| idx)
+                    .collect();
+
+                // 候補が見つかったらそのtoleranceで決定
+                if !candidates.is_empty() {
+                    break;
+                }
+            }
+
+            // 候補が見つかったらスワップ（見つからなければ何もしない）
+            if !candidates.is_empty() {
+                let idx2 = candidates[self.rng.gen_range(0..candidates.len())];
+                let (l2, r2, c2, _, _, _) = positions[idx2];
+
+                let tmp = layout.layers[*l1][*r1][*c1].clone();
+                layout.layers[*l1][*r1][*c1] = layout.layers[l2][r2][c2].clone();
                 layout.layers[l2][r2][c2] = tmp;
             }
         }
@@ -408,13 +477,35 @@ impl GeneticAlgorithm {
             }
         }
 
-        // 重複位置に欠落文字を配置
-        missing.shuffle(&mut self.rng);
-        for (i, (layer, row, col)) in duplicates.iter().enumerate() {
-            if let Some(replacement) = missing.get(i) {
+        // 重複位置に欠落文字を配置（頻度と位置コストを考慮）
+        // 重複位置を位置コストでソート（低コストが先）
+        let mut duplicate_positions: Vec<(usize, usize, usize, f64)> = duplicates
+            .iter()
+            .map(|&(l, r, c)| {
+                let cost = get_position_cost(l, r, c);
+                (l, r, c, cost)
+            })
+            .collect();
+        duplicate_positions.sort_by(|a, b| a.3.partial_cmp(&b.3).unwrap());
+
+        // 欠落文字を頻度でソート（高頻度が先）
+        let mut missing_with_freq: Vec<(String, f64)> = missing
+            .iter()
+            .map(|s| {
+                let freq = self.evaluator.corpus.string_freq
+                    .get(s)
+                    .copied()
+                    .unwrap_or(0) as f64;
+                (s.clone(), freq)
+            })
+            .collect();
+        missing_with_freq.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+        // 高頻度文字を低コスト位置に、低頻度文字を高コスト位置に配置
+        for (i, (layer, row, col, _cost)) in duplicate_positions.iter().enumerate() {
+            if let Some((replacement, _freq)) = missing_with_freq.get(i) {
                 layout.layers[*layer][*row][*col] = replacement.clone();
             }
-            // 欠落文字が足りない場合でも警告を出さない（通常は発生しないはず）
         }
     }
 }

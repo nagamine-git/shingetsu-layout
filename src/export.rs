@@ -98,20 +98,89 @@ pub fn export_all(layout: &Layout, base_name: &str) {
         .as_secs();
     let stem_with_timestamp = format!("{}_{}", stem, timestamp);
 
+    // 日時フォルダを作成（results/YYYY-MM-DD_HH-MM-SS/）
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    // 日本時間（UTC+9）に変換
+    let jst_offset = 9 * 3600;
+    let jst_timestamp = now + jst_offset;
+    let days_since_epoch = jst_timestamp / 86400;
+    let seconds_in_day = jst_timestamp % 86400;
+
+    // 1970-01-01からの日数を年月日に変換
+    let (year, month, day) = days_to_date(days_since_epoch as i32);
+
+    // 秒数を時分秒に変換
+    let hour = seconds_in_day / 3600;
+    let minute = (seconds_in_day % 3600) / 60;
+    let second = seconds_in_day % 60;
+
+    let datetime_str = format!("{:04}-{:02}-{:02}_{:02}-{:02}-{:02}",
+        year, month, day, hour, minute, second);
+
+    // 出力ディレクトリを作成: results/YYYY-MM-DD_HH-MM-SS/
+    let output_dir = parent.join("results").join(&datetime_str);
+    std::fs::create_dir_all(&output_dir).unwrap_or_else(|e| {
+        eprintln!("出力ディレクトリ作成エラー: {} ({})", e, output_dir.display());
+    });
+
+    println!("出力先: {}/", output_dir.display());
+
     // 1. JSON (best_layout.json形式)
-    export_json(layout, &parent.join(format!("{}.json", stem_with_timestamp)));
+    export_json(layout, &output_dir.join(format!("{}.json", stem_with_timestamp)));
 
     // 2. keyboard_analyzer用JSON
-    export_analyzer_json(layout, &parent.join(format!("{}_analyzer.json", stem_with_timestamp)));
+    export_analyzer_json(layout, &output_dir.join(format!("{}_analyzer.json", stem_with_timestamp)));
 
     // 3. hazkey TSV (QWERTY)
-    export_tsv(layout, &parent.join(format!("{}-ansi.tsv", stem_with_timestamp)), false);
+    export_tsv(layout, &output_dir.join(format!("{}-ansi.tsv", stem_with_timestamp)), false);
 
     // 4. hazkey TSV (Colemak)
-    export_tsv(layout, &parent.join(format!("{}-ansi-colemak.tsv", stem_with_timestamp)), true);
+    export_tsv(layout, &output_dir.join(format!("{}-ansi-colemak.tsv", stem_with_timestamp)), true);
 
     // 5. Karabiner JSON
-    export_karabiner(layout, &parent.join(format!("{}-karabiner.json", stem_with_timestamp)));
+    export_karabiner(layout, &output_dir.join(format!("{}-karabiner.json", stem_with_timestamp)));
+}
+
+/// UNIXエポックからの日数を年月日に変換
+/// 簡易実装（グレゴリオ暦、閏年対応）
+fn days_to_date(days: i32) -> (i32, i32, i32) {
+    let mut year = 1970;
+    let mut remaining_days = days;
+
+    loop {
+        let days_in_year = if is_leap_year(year) { 366 } else { 365 };
+        if remaining_days < days_in_year {
+            break;
+        }
+        remaining_days -= days_in_year;
+        year += 1;
+    }
+
+    let days_in_months = if is_leap_year(year) {
+        [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    } else {
+        [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    };
+
+    let mut month = 1;
+    for &days_in_month in &days_in_months {
+        if remaining_days < days_in_month {
+            break;
+        }
+        remaining_days -= days_in_month;
+        month += 1;
+    }
+
+    let day = remaining_days + 1;
+    (year, month, day)
+}
+
+/// 閏年判定
+fn is_leap_year(year: i32) -> bool {
+    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 }
 
 /// JSON形式でエクスポート（既存形式）

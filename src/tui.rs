@@ -43,6 +43,15 @@ pub struct TuiState {
     pub completed_runs: usize,
     /// 総ラン数
     pub total_runs: usize,
+    /// Initial配列（プレビュー用）
+    pub initial_layout: KeyboardLayout,
+    /// 2番目に良い配列
+    pub second_best_layout: Option<KeyboardLayout>,
+    pub second_best_fitness: f64,
+    /// 表示モード: 0=best, 1=2nd_best, 2=initial
+    pub view_mode: usize,
+    /// デバッグパネル表示フラグ: [1:Scores, 2:KeyScore, 3:PositionCost]
+    pub debug_panel_visible: [bool; 3],
 }
 
 impl TuiState {
@@ -65,6 +74,11 @@ impl TuiState {
             multi_run_mode: false,
             completed_runs: 0,
             total_runs: 0,
+            initial_layout: KeyboardLayout::improved_custom(),
+            second_best_layout: None,
+            second_best_fitness: 0.0,
+            view_mode: 0,
+            debug_panel_visible: [true, true, true], // 全パネル初期表示
         }
     }
 
@@ -97,11 +111,18 @@ impl TuiState {
         self.weights = Some(weights);
     }
 
-    pub fn update(&mut self, generation: usize, fitness: f64, layout: &KeyboardLayout) {
+    pub fn update(&mut self, generation: usize, fitness: f64, layout: &KeyboardLayout, second_best: Option<(f64, &KeyboardLayout)>) {
         self.generation = generation;
         if fitness > self.best_fitness {
             self.best_fitness = fitness;
             self.best_layout = Some(layout.clone());
+        }
+        // 2nd bestも更新
+        if let Some((second_fitness, second_layout)) = second_best {
+            if second_fitness > self.second_best_fitness {
+                self.second_best_fitness = second_fitness;
+                self.second_best_layout = Some(second_layout.clone());
+            }
         }
         self.fitness_history.push(fitness);
     }
@@ -126,26 +147,43 @@ impl TuiApp {
     /// TUIを描画
     pub fn draw(&mut self, state: &TuiState) -> io::Result<()> {
         self.terminal.draw(|f| {
-            // マルチランモードの場合は4面表示
-            if state.multi_run_mode && state.debug {
-                render_multi_run_debug(f, state);
-                return;
-            }
-
-            let main_chunks = if state.debug {
-                // デバッグモード: 上部を圧縮、下部を拡大
-                Layout::default()
-                    .direction(Direction::Vertical)
+            if state.debug {
+                // デバッグモード: 2カラムレイアウト
+                let main_columns = Layout::default()
+                    .direction(Direction::Horizontal)
                     .margin(1)
                     .constraints([
-                        Constraint::Length(3),   // Progress bar
-                        Constraint::Length(8),   // Graph (小さく)
-                        Constraint::Min(30),     // Layout + Scores + Debug (大きく)
+                        Constraint::Percentage(25), // 左: Progress + Graph
+                        Constraint::Percentage(75), // 右: Layout + Debug panel
                     ])
-                    .split(f.area())
+                    .split(f.area());
+
+                // 左カラム: Progress + Graph (縦に配置)
+                let left_chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([
+                        Constraint::Length(3),   // Progress bar
+                        Constraint::Min(10),     // Graph
+                    ])
+                    .split(main_columns[0]);
+
+                render_progress(f, left_chunks[0], state);
+                render_graph(f, left_chunks[1], state);
+
+                // 右カラム: キーボード + デバッグパネル
+                let right_chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([
+                        Constraint::Length(25),  // キーボード (Layer 0-3全表示に拡大)
+                        Constraint::Min(20),     // デバッグパネル
+                    ])
+                    .split(main_columns[1]);
+
+                render_keyboard(f, right_chunks[0], state);
+                render_debug_panel(f, right_chunks[1], state);
             } else {
                 // 通常モード
-                Layout::default()
+                let main_chunks = Layout::default()
                     .direction(Direction::Vertical)
                     .margin(1)
                     .constraints([
@@ -153,34 +191,18 @@ impl TuiApp {
                         Constraint::Length(12),  // Graph
                         Constraint::Percentage(50), // Layout + Scores
                     ])
-                    .split(f.area())
-            };
+                    .split(f.area());
 
-            let bottom_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(50), // Layout
-                    Constraint::Percentage(50), // Scores + Weights
-                ])
-                .split(main_chunks[2]);
-
-            render_progress(f, main_chunks[0], state);
-            render_graph(f, main_chunks[1], state);
-            
-            if state.debug {
-                // デバッグモード: 2段構成（上段：キーボードのみ、下段：デバッグ3カラム）
-                let debug_rows = Layout::default()
-                    .direction(Direction::Vertical)
+                let bottom_chunks = Layout::default()
+                    .direction(Direction::Horizontal)
                     .constraints([
-                        Constraint::Length(19),  // 上段: キーボードのみ（3行拡張）
-                        Constraint::Min(20),     // 下段: デバッグ3カラム
+                        Constraint::Percentage(50), // Layout
+                        Constraint::Percentage(50), // Scores + Weights
                     ])
                     .split(main_chunks[2]);
-                
-                render_keyboard(f, debug_rows[0], state);
-                render_debug_panel(f, debug_rows[1], state); // 下段でスコア+採点+位置コスト
-            } else {
-                // 通常モード: 2分割
+
+                render_progress(f, main_chunks[0], state);
+                render_graph(f, main_chunks[1], state);
                 render_keyboard(f, bottom_chunks[0], state);
                 render_scores_and_weights(f, bottom_chunks[1], state);
             }
@@ -189,15 +211,21 @@ impl TuiApp {
     }
 
     /// イベントをポーリング（ノンブロッキング）
-    pub fn poll_event(&self) -> io::Result<bool> {
+    /// 戻り値: Some(char)=キー操作, None=継続
+    pub fn poll_event(&self) -> io::Result<Option<char>> {
         if event::poll(std::time::Duration::from_millis(10))? {
             if let Event::Key(key) = event::read()? {
-                if key.code == KeyCode::Char('q') || key.code == KeyCode::Esc {
-                    return Ok(true);
+                match key.code {
+                    KeyCode::Char('q') | KeyCode::Esc => return Ok(Some('q')),
+                    KeyCode::Char('i') => return Ok(Some('i')),
+                    KeyCode::Char('1') => return Ok(Some('1')),
+                    KeyCode::Char('2') => return Ok(Some('2')),
+                    KeyCode::Char('3') => return Ok(Some('3')),
+                    _ => {}
                 }
             }
         }
-        Ok(false)
+        Ok(None)
     }
 
     /// TUIを終了
@@ -230,15 +258,25 @@ fn render_progress(f: &mut Frame, area: Rect, state: &TuiState) {
 
     let debug_indicator = if state.debug { " [★DEBUG★]" } else { "" };
     let title = format!("Progress{}", debug_indicator);
-    
+
+    let label = if state.multi_run_mode {
+        format!(
+            "Multi-Run: {}/{} | Gen {}/{} | Best: {:.4}{}",
+            state.completed_runs, state.total_runs,
+            state.generation, state.max_generations, state.best_fitness, eta_str
+        )
+    } else {
+        format!(
+            "Gen {}/{} | Best: {:.4}{}",
+            state.generation, state.max_generations, state.best_fitness, eta_str
+        )
+    };
+
     let gauge = Gauge::default()
         .block(Block::default().borders(Borders::ALL).title(title))
         .gauge_style(Style::default().fg(Color::Cyan).bg(Color::Black))
         .percent((progress * 100.0) as u16)
-        .label(format!(
-            "Gen {}/{} | Best: {:.4}{}",
-            state.generation, state.max_generations, state.best_fitness, eta_str
-        ));
+        .label(label);
 
     f.render_widget(gauge, area);
 }
@@ -413,19 +451,36 @@ fn render_multi_run_panel(f: &mut Frame, area: Rect, run_id: usize, fitness: f64
 
 /// キーボード配列を描画
 fn render_keyboard(f: &mut Frame, area: Rect, state: &TuiState) {
-    let layout = match &state.best_layout {
-        Some(l) => l,
-        None => {
-            let block = Block::default()
-                .borders(Borders::ALL)
-                .title("Best Layout");
-            f.render_widget(block, area);
-            return;
+    // view_mode: 0=best, 1=2nd_best, 2=initial
+    let (layout, title, fitness_str) = match state.view_mode {
+        1 => {
+            // 2nd best配列を表示
+            match &state.second_best_layout {
+                Some(l) => (l, "2nd Best Layout", format!("Fitness: {:.4}", state.second_best_fitness)),
+                None => {
+                    // 2nd bestがない場合はinitialを表示
+                    (&state.initial_layout, "2nd Best Layout (none yet)", String::from("(Initial)"))
+                }
+            }
+        }
+        2 => {
+            // Initial配列を表示
+            (&state.initial_layout, "Initial Layout", format!("Fitness: {:.4}", state.initial_layout.fitness))
+        }
+        _ => {
+            // Best配列を表示
+            match &state.best_layout {
+                Some(l) => (l, "Best Layout", format!("Fitness: {:.4}", state.best_fitness)),
+                None => {
+                    // best_layoutがない場合はinitialを表示
+                    (&state.initial_layout, "Best Layout (none yet)", format!("Fitness: {:.4}", state.initial_layout.fitness))
+                }
+            }
         }
     };
 
     let mut lines: Vec<Line> = vec![Line::from(Span::styled(
-        format!("Fitness: {:.4}", state.best_fitness),
+        format!("{} [Press 'i' to toggle]", fitness_str),
         Style::default()
             .fg(Color::Green)
             .add_modifier(Modifier::BOLD),
@@ -463,7 +518,7 @@ fn render_keyboard(f: &mut Frame, area: Rect, state: &TuiState) {
     let paragraph = Paragraph::new(lines).block(
         Block::default()
             .borders(Borders::ALL)
-            .title("Current Best Layout"),
+            .title(title),
     );
 
     f.render_widget(paragraph, area);
@@ -643,62 +698,62 @@ fn calc_tsuki_match_detail(
 
 /// キーごとの位置コストを計算（評価ロジックと同じ）
 fn calc_position_cost_for_key(pos: &crate::layout::KeyPos) -> f64 {
-    // base_cost計算（評価と同じロジック）
-    let base_cost = match pos.row {
-        1 => 1.0,  // ホーム
-        0 => match pos.col {
-            0 | 9 => 3.0,     // 上段外側
-            1 | 8 => 2.5,     // 上段薬指
-            _ => 2.0,         // 上段その他
-        },
-        2 => match pos.col {
-            0 | 9 => 3.0,     // 下段外側
-            _ => 2.5,         // 下段その他
-        },
-        _ => 4.0,
-    };
-    
-    let mut multiplier = 1.0;
-    let layer_penalty = if pos.layer == 0 { 1.0 } else { 1.05 };
-    
-    if pos.layer == 1 {  // ☆シフト
-        multiplier = 3.0 * layer_penalty;
-        if pos.col == 7 && pos.row != 1 {  // Ver: ☆の上下
-            multiplier += 27.0;
-        }
-        if pos.col >= 8 {  // Out: ☆より小指側
-            multiplier += 9.0;
-        }
-    } else if pos.layer == 2 {  // ★シフト
-        multiplier = 3.0 * layer_penalty;
-        if pos.col == 2 && pos.row != 1 {  // Ver: ★の上下
-            multiplier += 27.0;
-        }
-        if pos.col <= 1 {  // Out: ★より小指側
-            multiplier += 9.0;
-        }
-    }
-    
-    base_cost * multiplier
+    // POSITION_COSTS配列から直接取得（evaluation.rsと完全に同じ）
+    crate::layout::get_position_cost(pos.layer, pos.row, pos.col)
 }
 
 /// デバッグパネルを描画（全計算過程・3カラム）
 fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
-    // 3カラムに分割
+    // 表示中のパネル数に応じて幅を動的に調整
+    let visible_count = state.debug_panel_visible.iter().filter(|&&v| v).count();
+
+    if visible_count == 0 {
+        // 全非表示の場合は説明を表示
+        let help_text = vec![
+            Line::from(""),
+            Line::from("全パネルが非表示です。表示するには:"),
+            Line::from(""),
+            Line::from("  [1] Scores+計算式"),
+            Line::from("  [2] キーごと採点"),
+            Line::from("  [3] 位置コスト"),
+            Line::from(""),
+            Line::from("数字キー 1/2/3 で表示・非表示を切り替え"),
+        ];
+        let paragraph = Paragraph::new(help_text)
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title("Debug Panel"));
+        f.render_widget(paragraph, area);
+        return;
+    }
+
+    // 表示するパネルのConstraintを動的に構築
+    let mut constraints = Vec::new();
+    let width_per_panel = 100 / visible_count as u16;
+
+    for &visible in &state.debug_panel_visible {
+        if visible {
+            constraints.push(Constraint::Percentage(width_per_panel));
+        }
+    }
+
     let columns = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(30), // 左：Core/Bonus計算式
-            Constraint::Percentage(35), // 中央：キーごと採点
-            Constraint::Percentage(35), // 右：位置コスト
-        ])
+        .constraints(constraints)
         .split(area);
     
     let mut left_lines = vec![];
     let mut center_lines = vec![];
     let mut right_lines = vec![];
     
-    if let (Some(layout), Some(w)) = (&state.best_layout, &state.weights) {
+    // view_mode: 0=best, 1=2nd_best, 2=initial
+    let layout = match state.view_mode {
+        1 => state.second_best_layout.as_ref().unwrap_or(&state.initial_layout),
+        2 => &state.initial_layout,
+        _ => state.best_layout.as_ref().unwrap_or(&state.initial_layout),
+    };
+
+    if let Some(w) = &state.weights {
         let s = &layout.scores;
         let layers = &layout.layers;
         
@@ -750,33 +805,42 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
         let alt = (s.alternating/100.0).max(0.01);
         let pc = (s.position_cost/100.0).max(0.01);
 
-        left_lines.push(Line::from(format!("同指連続低: {:.3}^{:.0}={:.2e}",
-            sf, w.same_finger, sf.powf(w.same_finger))));
-        left_lines.push(Line::from(format!("段越え低: {:.3}^{:.0}={:.2e}",
-            rs, w.row_skip, rs.powf(w.row_skip))));
-        left_lines.push(Line::from(format!("ホーム率: {:.3}^{:.0}={:.2e}",
-            hp, w.home_position, hp.powf(w.home_position))));
-        left_lines.push(Line::from(format!("打鍵少: {:.3}^{:.0}={:.2e}",
-            tk, w.total_keystrokes, tk.powf(w.total_keystrokes))));
-        left_lines.push(Line::from(format!("左右交互: {:.3}^{:.0}={:.2e}",
-            alt, w.alternating, alt.powf(w.alternating))));
-        left_lines.push(Line::from(format!("位置コスト: {:.3}^{:.0}={:.2e}",
-            pc, w.position_cost, pc.powf(w.position_cost))));
+        // 対数空間で計算（evaluation.rsと同じ）
+        let sf_powered = (w.same_finger * sf.ln()).exp();
+        let rs_powered = (w.row_skip * rs.ln()).exp();
+        let hp_powered = (w.home_position * hp.ln()).exp();
+        let tk_powered = (w.total_keystrokes * tk.ln()).exp();
+        let alt_powered = (w.alternating * alt.ln()).exp();
+        let pc_powered = (w.position_cost * pc.ln()).exp();
 
-        let core_product = sf.powf(w.same_finger)
-            * rs.powf(w.row_skip)
-            * hp.powf(w.home_position)
-            * tk.powf(w.total_keystrokes)
-            * alt.powf(w.alternating)
-            * pc.powf(w.position_cost);
+        left_lines.push(Line::from(format!("同指連続低: {:.3}^{:.0}={:.2e}",
+            sf, w.same_finger, sf_powered)));
+        left_lines.push(Line::from(format!("段越え低: {:.3}^{:.0}={:.2e}",
+            rs, w.row_skip, rs_powered)));
+        left_lines.push(Line::from(format!("ホーム率: {:.3}^{:.0}={:.2e} (L0:1/L1,2:0.1/L3:除外)",
+            hp, w.home_position, hp_powered)));
+        left_lines.push(Line::from(format!("打鍵少: {:.3}^{:.0}={:.2e}",
+            tk, w.total_keystrokes, tk_powered)));
+        left_lines.push(Line::from(format!("左右交互: {:.3}^{:.0}={:.2e}",
+            alt, w.alternating, alt_powered)));
+        left_lines.push(Line::from(format!("位置コスト: {:.3}^{:.0}={:.2e} (線形)",
+            pc, w.position_cost, pc_powered)));
+
         let total_weight = w.same_finger + w.row_skip + w.home_position
             + w.total_keystrokes + w.alternating + w.position_cost;
-        let core_mult = core_product.powf(1.0 / total_weight) * 100.0;
+
+        let log_core_sum = w.same_finger * sf.ln()
+            + w.row_skip * rs.ln()
+            + w.home_position * hp.ln()
+            + w.total_keystrokes * tk.ln()
+            + w.alternating * alt.ln()
+            + w.position_cost * pc.ln();
+        let core_mult = (log_core_sum / total_weight).exp() * 100.0;
         
         left_lines.push(Line::from(""));
-        left_lines.push(Line::from(format!("積={:.2e}, 重み計={:.0}", core_product, total_weight)));
-        left_lines.push(Line::from(format!("→Core: ({:.2e})^(1/{:.0})*100={:.4}",
-            core_product, total_weight, core_mult)));
+        left_lines.push(Line::from(format!("log_sum={:.2}, 重み計={:.0}", log_core_sum, total_weight)));
+        left_lines.push(Line::from(format!("→Core: exp({:.2}/{:.0})*100={:.4}",
+            log_core_sum, total_weight, core_mult)));
         
         // Bonus計算式
         left_lines.push(Line::from(""));
@@ -860,11 +924,12 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
             std::collections::HashMap::new()
         };
         
-        for layer in 0..3.min(layers.len()) {
+        for layer in 0..4.min(layers.len()) {
             let layer_name = match layer {
                 0 => "L0",
                 1 => "L1",
                 2 => "L2",
+                3 => "L3",
                 _ => "",
             };
             right_lines.push(Line::from(format!("{}:", layer_name)));
@@ -904,9 +969,10 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
             right_lines.push(Line::from(""));
         }
 
-        right_lines.push(Line::from("L0: 上段外側・下段外側"));
+        right_lines.push(Line::from("L0: 通常 L1:☆ L2:★ L3:◆"));
         right_lines.push(Line::from("L1: ☆(col7)上下Ver+27,Out+9"));
         right_lines.push(Line::from("L2: ★(col2)上下Ver+27,Out+9"));
+        right_lines.push(Line::from("L3: ◆シフト (同L0基準)"));
         
         // ========== 中央カラム: キーごと採点 ==========
         center_lines.push(Line::from(Span::styled(
@@ -1098,33 +1164,44 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
         center_lines.push(Line::from("計算中..."));
         right_lines.push(Line::from("計算中..."));
     }
-    
-    // 左カラム描画
-    let left_para = Paragraph::new(left_lines)
-        .block(Block::default()
-            .title("L: Scores+計算式")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Green)))
-        .wrap(Wrap { trim: false });
-    f.render_widget(left_para, columns[0]);
-    
-    // 中央カラム描画
-    let center_para = Paragraph::new(center_lines)
-        .block(Block::default()
-            .title("C: キーごと採点")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan)))
-        .wrap(Wrap { trim: false });
-    f.render_widget(center_para, columns[1]);
-    
-    // 右カラム描画
-    let right_para = Paragraph::new(right_lines)
-        .block(Block::default()
-            .title("R: 位置コスト")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Yellow)))
-        .wrap(Wrap { trim: false });
-    f.render_widget(right_para, columns[2]);
+
+    // 表示中のパネルのみを描画（列インデックスを動的に割り当て）
+    let mut col_idx = 0;
+
+    // パネル1: Scores+計算式
+    if state.debug_panel_visible[0] {
+        let left_para = Paragraph::new(left_lines)
+            .block(Block::default()
+                .title("[1] Scores+計算式")
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Green)))
+            .wrap(Wrap { trim: false });
+        f.render_widget(left_para, columns[col_idx]);
+        col_idx += 1;
+    }
+
+    // パネル2: キーごと採点
+    if state.debug_panel_visible[1] {
+        let center_para = Paragraph::new(center_lines)
+            .block(Block::default()
+                .title("[2] キーごと採点")
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Cyan)))
+            .wrap(Wrap { trim: false });
+        f.render_widget(center_para, columns[col_idx]);
+        col_idx += 1;
+    }
+
+    // パネル3: 位置コスト
+    if state.debug_panel_visible[2] {
+        let right_para = Paragraph::new(right_lines)
+            .block(Block::default()
+                .title("[3] 位置コスト")
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Yellow)))
+            .wrap(Wrap { trim: false });
+        f.render_widget(right_para, columns[col_idx]);
+    }
 }
 fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
     let layout = match &state.best_layout {
@@ -1197,7 +1274,7 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
             s.row_skip, weights.row_skip
         )));
         lines.push(Line::from(format!(
-            "ホーム率:   {:.1}% ^{:.1}",
+            "ホーム率:   {:.1}% ^{:.1} (L0:1/L1,2:0.1/L3:除外)",
             s.home_position, weights.home_position
         )));
         lines.push(Line::from(format!(
@@ -1282,11 +1359,28 @@ pub fn run_tui_thread(state: Arc<Mutex<TuiState>>) -> std::thread::JoinHandle<()
             }
 
             match app.poll_event() {
-                Ok(true) => {
+                Ok(Some('q')) => {
                     let mut state = state.lock().unwrap();
                     state.running = false;
                     break;
                 }
+                Ok(Some('i')) => {
+                    let mut state = state.lock().unwrap();
+                    state.view_mode = (state.view_mode + 1) % 3;  // 0=best, 1=2nd_best, 2=initial
+                }
+                Ok(Some('1')) => {
+                    let mut state = state.lock().unwrap();
+                    state.debug_panel_visible[0] = !state.debug_panel_visible[0];
+                }
+                Ok(Some('2')) => {
+                    let mut state = state.lock().unwrap();
+                    state.debug_panel_visible[1] = !state.debug_panel_visible[1];
+                }
+                Ok(Some('3')) => {
+                    let mut state = state.lock().unwrap();
+                    state.debug_panel_visible[2] = !state.debug_panel_visible[2];
+                }
+                Ok(None) => {}
                 Err(e) => {
                     eprintln!("TUI event error: {}", e);
                     break;

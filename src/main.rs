@@ -301,10 +301,10 @@ fn run_single(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeights
             .progress_chars("#>-"),
     );
 
-    let result = ga.run_with_callback(|gen, fitness, layout| {
+    let result = ga.run_with_callback(|gen, fitness, layout, _second_best| {
         pb.set_position(gen as u64);
         pb.set_message(format!("{:.4}", fitness));
-        
+
         // 最良結果を更新
         let mut best = best_layout_for_callback.lock().unwrap();
         let mut best_fit = best_fitness_for_callback.lock().unwrap();
@@ -335,10 +335,13 @@ fn run_with_tui(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeigh
     let corpus_arc = Arc::new(corpus.clone());
     let state = Arc::new(Mutex::new(TuiState::new_with_debug(config.generations, debug, Some(Arc::clone(&corpus_arc)))));
     
-    // 重みを設定
+    // 重みを設定してinitial配列を評価
     {
         let mut s = state.lock().unwrap();
         s.set_weights(weights.clone());
+        // initial配列を評価
+        let evaluator = crate::evaluation::Evaluator::with_weights(corpus.clone(), weights.clone());
+        evaluator.evaluate(&mut s.initial_layout);
     }
     
     let tui_state = Arc::clone(&state);
@@ -364,12 +367,12 @@ fn run_with_tui(corpus: &CorpusStats, config: GaConfig, weights: EvaluationWeigh
 
     let mut ga = GeneticAlgorithm::with_weights(corpus.clone(), config.clone(), weights.clone());
 
-    let result = ga.run_with_callback(|gen, fitness, layout| {
+    let result = ga.run_with_callback(|gen, fitness, layout, second_best| {
         let mut s = state.lock().unwrap();
         if !s.running {
             return;
         }
-        s.update(gen, fitness, layout);
+        s.update(gen, fitness, layout, second_best);
     });
 
     // TUI終了
@@ -465,11 +468,14 @@ fn run_multi_with_tui(
     let corpus_arc = Arc::new(corpus.clone());
     let state = Arc::new(Mutex::new(TuiState::new_with_debug(config.generations, debug, Some(Arc::clone(&corpus_arc)))));
 
-    // 重みとマルチランモードを設定
+    // 重みとマルチランモードを設定、initial配列を評価
     {
         let mut s = state.lock().unwrap();
         s.set_weights(weights.clone());
         s.enable_multi_run(actual_runs);
+        // initial配列を評価
+        let evaluator = crate::evaluation::Evaluator::with_weights(corpus.clone(), weights.clone());
+        evaluator.evaluate(&mut s.initial_layout);
     }
 
     let completed_runs = Arc::new(AtomicUsize::new(0));
@@ -519,7 +525,7 @@ fn run_multi_with_tui(
                 weights.clone(),
             );
 
-            let result = ga.run_with_callback(|gen, fitness, layout| {
+            let result = ga.run_with_callback(|gen, fitness, layout, _second_best| {
                 // try_lockでブロッキング回避（ロック競合時はスキップ）
                 if let Ok(mut s) = state.try_lock() {
                     if !s.running {
@@ -616,14 +622,14 @@ fn print_scores(layout: &Layout, weights: &EvaluationWeights) {
     println!("\nCore Metrics (乗算・指数):");
     println!("  同指連続低:     {:.2}% ^{:.2}  (1 - SFB数/全bigram数)", s.same_finger, w.same_finger);
     println!("  段飛ばし少:     {:.2}% ^{:.2}  (1 - 段飛数/全bigram数)", s.row_skip, w.row_skip);
-    println!("  ホームポジ率:   {:.2}% ^{:.2}  (中段頻度/全頻度)", s.home_position, w.home_position);
+    println!("  ホームポジ率:   {:.2}% ^{:.2}  (中段頻度/全頻度, L0:1.0 L1,2:0.1 L3:除外)", s.home_position, w.home_position);
     println!("  総打鍵コスト少: {:.2}% ^{:.2}  (100 - 正規化effort)", s.total_keystrokes, w.total_keystrokes);
     println!("  左右交互:       {:.2}% ^{:.2}  (交互数/全bigram数)", s.alternating, w.alternating);
-    println!("  Colemak類似:    {:.2}% ^{:.2}  (一致キー数/配置可能総数)", s.colemak_similarity, w.colemak_similarity);
-    
+    println!("  位置コスト:     {:.2}% ^{:.2}  (高頻度文字を低コスト位置に配置)", s.position_cost, w.position_cost);
+
     println!("\nBonus Metrics (加算):");
     println!("  単打鍵率:       {:.2} x {:.1}  (Layer0頻度/全頻度)", s.single_key, w.single_key);
-    println!("  位置別コスト:   {:.2} x {:.1}  (100 - avg_cost/292)", s.position_cost, w.position_cost);
+    println!("  Colemak類似:    {:.2} x {:.1}  (一致キー数/配置可能総数)", s.colemak_similarity, w.colemak_similarity);
     println!("  リダイレクト少: {:.2} x {:.1}  (100 - redirect率)", s.redirect_low, w.redirect_low);
     println!("  月配列類似:     {:.2} x {:.1}  (一致キー数/配置可能総数)", s.tsuki_similarity, w.tsuki_similarity);
     println!("  ロール率:       {:.2} x {:.1}  (roll数/同手bigram数)", s.roll, w.roll);
@@ -666,7 +672,7 @@ fn run_test_validation(corpus: &CorpusStats, args: &Args, weights: &EvaluationWe
             .progress_chars("#>-"),
     );
 
-    let result = ga.run_with_callback(|gen, fitness, _| {
+    let result = ga.run_with_callback(|gen, fitness, _, _| {
         pb.set_position(gen as u64);
         pb.set_message(format!("{:.4}", fitness));
     });

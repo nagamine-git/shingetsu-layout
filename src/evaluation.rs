@@ -71,6 +71,10 @@ pub struct Evaluator {
     pub corpus: CorpusStats,
     pub tsuki: TsukiLayout,
     pub weights: EvaluationWeights,
+    /// Baseline制約: initial配列の位置コスト（これより低い配列は不可）
+    pub baseline_position_cost: Option<f64>,
+    /// Baseline制約: initial配列の総打鍵数（これより低い配列は不可）
+    pub baseline_total_keystrokes: Option<f64>,
 }
 
 impl Evaluator {
@@ -80,6 +84,8 @@ impl Evaluator {
             corpus,
             tsuki: TsukiLayout::new(),
             weights: EvaluationWeights::default(),
+            baseline_position_cost: None,
+            baseline_total_keystrokes: None,
         }
     }
 
@@ -89,7 +95,15 @@ impl Evaluator {
             corpus,
             tsuki: TsukiLayout::new(),
             weights,
+            baseline_position_cost: None,
+            baseline_total_keystrokes: None,
         }
+    }
+
+    /// Baseline制約を設定（initial配列の値より低い候補を拒否）
+    pub fn set_baseline(&mut self, position_cost: f64, total_keystrokes: f64) {
+        self.baseline_position_cost = Some(position_cost);
+        self.baseline_total_keystrokes = Some(total_keystrokes);
     }
 
     /// 配列を評価してフィットネス値を計算
@@ -105,6 +119,13 @@ impl Evaluator {
     pub fn compute_fitness(&self, scores: &EvaluationScores) -> f64 {
         let w = &self.weights;
 
+        // ハード制約チェック: baseline以下の配列は強制的にfitness=0.01
+        if let (Some(baseline_pc), Some(baseline_tk)) = (self.baseline_position_cost, self.baseline_total_keystrokes) {
+            if scores.position_cost < baseline_pc || scores.total_keystrokes < baseline_tk {
+                return 0.01; // NGとしてマーク
+            }
+        }
+
         // Core metrics（乗算）- 基本6指標
         let same_finger_norm = (scores.same_finger / 100.0).max(0.01);
         let row_skip_norm = (scores.row_skip / 100.0).max(0.01);
@@ -116,14 +137,15 @@ impl Evaluator {
         let total_core_weight = w.same_finger + w.row_skip + w.home_position
             + w.total_keystrokes + w.alternating + w.position_cost;
 
-        let core_product = same_finger_norm.powf(w.same_finger)
-            * row_skip_norm.powf(w.row_skip)
-            * home_norm.powf(w.home_position)
-            * total_keystrokes_norm.powf(w.total_keystrokes)
-            * alternating_norm.powf(w.alternating)
-            * position_cost_norm.powf(w.position_cost);
+        // 対数空間で計算して数値安定性を確保（extreme weightsでもアンダーフローしない）
+        let log_core_sum = w.same_finger * same_finger_norm.ln()
+            + w.row_skip * row_skip_norm.ln()
+            + w.home_position * home_norm.ln()
+            + w.total_keystrokes * total_keystrokes_norm.ln()
+            + w.alternating * alternating_norm.ln()
+            + w.position_cost * position_cost_norm.ln();
 
-        let core_multiplier = core_product.powf(1.0 / total_core_weight) * 100.0;
+        let core_multiplier = (log_core_sum / total_core_weight).exp() * 100.0;
 
         // Bonus metrics（加算）- その他全て
         let additive_bonus = scores.single_key * w.single_key
@@ -165,10 +187,19 @@ impl Evaluator {
             let count_f = count as f64;
             if let Some(&pos) = char_map.get(&c) {
                 total_chars += count_f;
-                total_keystrokes += pos.weight() * count_f;
+                // 物理的な打鍵数: Layer 0は1打鍵、Layer 1,2,3は2打鍵（シフトキー含む）
+                let actual_keystrokes = if pos.layer == 0 { 1.0 } else { 2.0 };
+                total_keystrokes += actual_keystrokes * count_f;
 
-                if pos.is_home() {
-                    home_keystrokes += count_f;
+                // ホームポジション率: レイヤーごとに重み付け
+                // Layer 0: 1.0, Layer 1,2: 0.1, Layer 3: 除外
+                if pos.is_home() && pos.layer <= 2 {
+                    let layer_weight = match pos.layer {
+                        0 => 1.0,
+                        1 | 2 => 0.1,
+                        _ => 0.0,
+                    };
+                    home_keystrokes += count_f * layer_weight;
                 }
 
                 if pos.layer > 0 {
@@ -228,8 +259,10 @@ impl Evaluator {
             } else { 0.0 },
 
             total_keystrokes: if total_chars > 0.0 {
-                let avg_weight = total_keystrokes / total_chars;
-                100.0 * (1.0 - (avg_weight - 1.0) / 4.0).max(0.0) * coverage
+                // 平均打鍵数 = 総打鍵数 / 文字数
+                // 理想: 1.0打鍵/文字（全てLayer 0）、最悪: 2.0打鍵/文字（全てシフト層）
+                let avg_keystrokes = total_keystrokes / total_chars;
+                100.0 * (2.0 - avg_keystrokes).max(0.0) * coverage
             } else { 0.0 },
 
             same_finger: if bigram_counted > 0.0 {
@@ -336,10 +369,10 @@ impl Evaluator {
     /// 高頻度文字を低コスト位置に配置できているかを評価
     /// シフトキー: ★(col2)→L2, ☆(col7)→L1, ◆(row2,col9)→L3
     fn calc_position_cost(&self, layout: &Layout, char_map: &HashMap<char, KeyPos>) -> f64 {
-        let mut log_sum = 0.0;
+        let mut weighted_cost_sum = 0.0;
         let mut total_freq = 0.0;
 
-        // 1. 通常文字の評価
+        // 1. 通常文字の評価（頻度 × コストの加重平均）
         for (&c, &count) in &self.corpus.char_freq {
             if let Some(&pos) = char_map.get(&c) {
                 let cost = get_position_cost(pos.layer, pos.row, pos.col);
@@ -349,7 +382,7 @@ impl Evaluator {
                 }
 
                 let freq = count as f64;
-                log_sum += freq * (-cost.ln());
+                weighted_cost_sum += freq * cost;
                 total_freq += freq;
             }
         }
@@ -371,7 +404,7 @@ impl Evaluator {
                     let blank_cost: f64 = if is_blank_pos { 0.5 } else { 50.0 };
 
                     let blank_weight = total_freq * 0.01;
-                    log_sum += blank_weight * (-blank_cost.ln());
+                    weighted_cost_sum += blank_weight * blank_cost;
                     total_freq += blank_weight;
                 }
             }
@@ -381,8 +414,16 @@ impl Evaluator {
             return 0.0;
         }
 
-        let geo_score = (log_sum / total_freq).exp();
-        let normalized = geo_score.min(1.0);
+        // 加重平均コストを計算
+        let avg_cost = weighted_cost_sum / total_freq;
+
+        // 理想的な最小コスト（全てLayer 0の最良位置 = 1.0）
+        // 現実的な最悪コスト（Layer 3の高コスト位置の平均 = 約50.0）
+        // スコア = 100 - (実際のコスト - 理想コスト) / (最悪 - 理想) * 100
+        // 簡略化: avg_cost が小さいほどスコアが高い
+        let ideal_cost = 1.0;
+        let worst_cost = 50.0;
+        let normalized = ((worst_cost - avg_cost) / (worst_cost - ideal_cost)).clamp(0.0, 1.0);
         normalized * 100.0
     }
     

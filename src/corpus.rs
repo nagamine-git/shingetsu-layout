@@ -20,6 +20,8 @@ pub struct CorpusStats {
     pub fourgram_freq: HashMap<(char, char, char, char), usize>,
     /// ひらがな文字の頻度順リスト（1gramから生成）
     pub hiragana_by_freq: Vec<char>,
+    /// 文字列ベースの頻度マップ（1gram + 2gram拗音）
+    pub string_freq: HashMap<String, usize>,
 }
 
 /// ひらがな文字かどうかを判定
@@ -36,6 +38,7 @@ impl CorpusStats {
             trigram_freq: HashMap::new(),
             fourgram_freq: HashMap::new(),
             hiragana_by_freq: Vec::new(),
+            string_freq: HashMap::new(),
         }
     }
 
@@ -132,6 +135,9 @@ impl CorpusStats {
         // 記号（;・）を最低頻度として追加
         stats.add_symbol_chars();
 
+        // 文字列ベースの頻度マップを構築
+        stats.build_string_freq();
+
         Ok(stats)
     }
 
@@ -187,7 +193,10 @@ impl CorpusStats {
 
         // 記号（;・）を最低頻度として追加
         stats.add_symbol_chars();
-        
+
+        // 文字列ベースの頻度マップを構築
+        stats.build_string_freq();
+
         stats
     }
 
@@ -205,8 +214,25 @@ impl CorpusStats {
                 self.char_freq.insert(c, 1);
             }
         }
-        
+
         // hiragana_by_freqには追加しない（固定位置なので配置対象外）
+    }
+
+    /// 文字列ベースの頻度マップを構築
+    /// 1gram文字 + 2gram拗音（ゃゅょで終わる）の頻度を統合
+    fn build_string_freq(&mut self) {
+        // 1. 1gram文字の頻度をコピー
+        for (&ch, &count) in &self.char_freq {
+            self.string_freq.insert(ch.to_string(), count);
+        }
+
+        // 2. 2gram拗音の頻度を抽出（ゃゅょで終わる2文字組み合わせ）
+        for (&(c1, c2), &count) in &self.bigram_freq {
+            if matches!(c2, 'ゃ' | 'ゅ' | 'ょ') {
+                let youon = format!("{}{}", c1, c2);
+                self.string_freq.insert(youon, count);
+            }
+        }
     }
 
     /// コーパスの総文字数
