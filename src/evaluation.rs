@@ -7,7 +7,7 @@ use std::collections::{HashMap, HashSet};
 use crate::corpus::CorpusStats;
 use crate::layout::{
     romaji_phonemes, EvaluationScores, KeyPos, Layout, TsukiLayout,
-    COLEMAK_POSITIONS, COLS, NUM_LAYERS, ROWS,
+    COLEMAK_POSITIONS, cols_for_row, get_position_cost, NUM_LAYERS, ROWS,
 };
 
 // ============================================================================
@@ -147,15 +147,13 @@ impl Evaluator {
     /// 詳細スコアを計算
     fn compute_scores(&self, layout: &Layout) -> EvaluationScores {
         let char_map = layout.build_char_map();
-        
+
         let mut total_keystrokes = 0.0;
         let mut home_keystrokes = 0.0;
-        let mut shifted_keystrokes = 0.0;
         let mut single_keystrokes = 0.0;
         let mut layer1_keystrokes = 0.0;
         let mut layer2_keystrokes = 0.0;
         let mut layer3_keystrokes = 0.0;
-        let mut layer4_keystrokes = 0.0;
         let mut row_skips = 0.0;
         let mut same_finger = 0.0;
         let mut alternating = 0.0;
@@ -174,15 +172,12 @@ impl Evaluator {
                 }
 
                 if pos.layer > 0 {
-                    shifted_keystrokes += count_f;
                     if pos.layer == 1 {
                         layer1_keystrokes += count_f;
                     } else if pos.layer == 2 {
                         layer2_keystrokes += count_f;
                     } else if pos.layer == 3 {
                         layer3_keystrokes += count_f;
-                    } else if pos.layer == 4 {
-                        layer4_keystrokes += count_f;
                     }
                 } else {
                     single_keystrokes += count_f;
@@ -260,15 +255,13 @@ impl Evaluator {
             arpeggio: arpeggio_rate,
 
             shift_balance: {
-                let total_shifted = layer1_keystrokes + layer2_keystrokes
-                    + layer3_keystrokes + layer4_keystrokes;
+                // 3シフトレイヤーの均等性を評価（最小値/平均値の比率）
+                let total_shifted = layer1_keystrokes + layer2_keystrokes + layer3_keystrokes;
                 if total_shifted > 0.0 {
-                    // 4層の均等性を評価（最小値/平均値の比率）
-                    let avg = total_shifted / 4.0;
+                    let avg = total_shifted / 3.0;
                     let min_layer = layer1_keystrokes
                         .min(layer2_keystrokes)
-                        .min(layer3_keystrokes)
-                        .min(layer4_keystrokes);
+                        .min(layer3_keystrokes);
                     100.0 * (min_layer / avg)
                 } else {
                     100.0
@@ -341,53 +334,19 @@ impl Evaluator {
 
     /// 位置別コスト評価（幾何平均方式）
     /// 高頻度文字を低コスト位置に配置できているかを評価
-    /// シフトキー: D(col1)→L4, B(col2)→L2, A(col7)→L1, C(col8)→L3
+    /// シフトキー: ★(col2)→L2, ☆(col7)→L1, ◆(row2,col9)→L3
     fn calc_position_cost(&self, layout: &Layout, char_map: &HashMap<char, KeyPos>) -> f64 {
-        // Layer 0 (No Shift) ベースコスト
-        const COST_L0: [[f64; COLS]; ROWS] = [
-            [3.7, 2.0, 2.0, 2.4, 3.5,  3.9, 2.4, 2.0, 2.0, 3.7],  // 上段
-            [1.5, 1.0, 1.0, 1.0, 2.4,  2.4, 1.0, 1.0, 1.0, 1.5],  // 中段 (D,B,A,Cはシフトキー)
-            [3.7, 2.8, 2.4, 2.0, 3.9,  3.0, 2.0, 2.0, 2.0, 3.7],  // 下段 (、。は固定)
-        ];
-        // Layer 1 (A シフト - col7右中指)
-        const COST_L1: [[f64; COLS]; ROWS] = [
-            [7.5, 4.0, 4.0, 4.9, 6.9,  7.7, 4.9, 16.0, 16.0, 29.9],
-            [3.0, 2.0, 2.0, 2.0, 4.9,  4.9, 2.0, 8.0, 8.0, 12.0],
-            [7.5, 5.7, 4.9, 4.0, 7.7,  6.0, 4.0, 22.6, 22.6, 29.9],
-        ];
-        // Layer 2 (B シフト - col2左中指)
-        const COST_L2: [[f64; COLS]; ROWS] = [
-            [29.9, 16.0, 16.0, 4.9, 6.9,  7.7, 4.9, 4.0, 4.0, 7.5],
-            [12.0, 8.0, 8.0, 2.0, 4.9,  4.9, 2.0, 2.0, 2.0, 3.0],
-            [29.9, 22.6, 22.6, 4.0, 7.7,  6.0, 4.0, 4.9, 5.7, 7.5],
-        ];
-        // Layer 3 (C シフト - col8右薬指)
-        const COST_L3: [[f64; COLS]; ROWS] = [
-            [8.6, 4.6, 4.6, 5.6, 8.0,  8.9, 8.9, 5.6, 34.4, 34.4],
-            [3.5, 2.3, 2.3, 2.3, 5.6,  5.6, 2.3, 2.3, 9.2, 13.8],
-            [8.6, 6.5, 5.6, 4.6, 8.9,  6.9, 4.6, 5.6, 34.4, 34.4],
-        ];
-        // Layer 4 (D シフト - col1左薬指)
-        const COST_L4: [[f64; COLS]; ROWS] = [
-            [34.4, 34.4, 4.6, 5.6, 8.0,  8.9, 5.6, 4.6, 4.6, 8.6],
-            [13.8, 9.2, 2.3, 2.3, 5.6,  5.6, 2.3, 2.3, 2.3, 3.5],
-            [34.4, 34.4, 5.6, 4.6, 8.9,  6.9, 4.6, 5.6, 6.5, 8.6],
-        ];
-
         let mut log_sum = 0.0;
         let mut total_freq = 0.0;
 
         // 1. 通常文字の評価
         for (&c, &count) in &self.corpus.char_freq {
             if let Some(&pos) = char_map.get(&c) {
-                let cost = match pos.layer {
-                    0 => COST_L0[pos.row][pos.col],
-                    1 => COST_L1[pos.row][pos.col],
-                    2 => COST_L2[pos.row][pos.col],
-                    3 => COST_L3[pos.row][pos.col],
-                    4 => COST_L4[pos.row][pos.col],
-                    _ => 50.0,
-                };
+                let cost = get_position_cost(pos.layer, pos.row, pos.col);
+                // コストが0の場合（固定位置）はスキップ
+                if cost <= 0.0 {
+                    continue;
+                }
 
                 let freq = count as f64;
                 log_sum += freq * (-cost.ln());
@@ -398,23 +357,18 @@ impl Evaluator {
         // 2. 空白文字のペナルティ
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     let c = &layout.layers[layer][row][col];
 
-                    if c != "　" || crate::layout::Layout::is_fixed_position(layer, row, col) {
+                    if c != "　" || Layout::is_fixed_position(layer, row, col) {
                         continue;
                     }
 
-                    // Ver/Out位置の空白は許容、それ以外はペナルティ
-                    let is_ver_or_out = match layer {
-                        1 => col >= 7 && row != 1,           // Layer 1: A(col7)の上下、col>=8
-                        2 => col <= 2 && row != 1,           // Layer 2: B(col2)の上下、col<=1
-                        3 => col >= 8 && row != 1,           // Layer 3: C(col8)の上下、col>=9
-                        4 => col <= 1 && row != 1,           // Layer 4: D(col1)の上下、col<=0
-                        _ => false,
-                    };
+                    // 空白位置（シフト制限）は許容、それ以外はペナルティ
+                    let is_blank_pos = Layout::is_blank_position(layer, row, col);
 
-                    let blank_cost: f64 = if is_ver_or_out { 0.5 } else { 50.0 };
+                    let blank_cost: f64 = if is_blank_pos { 0.5 } else { 50.0 };
 
                     let blank_weight = total_freq * 0.01;
                     log_sum += blank_weight * (-blank_cost.ln());
@@ -434,7 +388,7 @@ impl Evaluator {
     
     /// Colemak類似度を計算
     /// - Layer 0: 100%の重み
-    /// - Layer 1, 2: 80%の重み
+    /// - Layer 1, 2, 3: 30%の重み
     fn calc_colemak_similarity(&self, layout: &Layout) -> f64 {
         let mut total_score = 0.0;
         let mut max_score = 0.0;
@@ -448,9 +402,10 @@ impl Evaluator {
             let layer_weight = if layer == 0 { 1.0 } else { 0.3 };
 
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     let c = &layout.layers[layer][row][col];
-                    if c == "☆" || c == "★" || c == "、" || c == "。" || c == "　" || c == "\0" || c == "゛" || c == "゜" {
+                    if c == "☆" || c == "★" || c == "◆" || c == "、" || c == "。" || c == "ー" || c == "・" || c == ";" || c == "　" || c == "\0" || c == "゛" || c == "゜" {
                         continue;
                     }
 
@@ -469,28 +424,30 @@ impl Evaluator {
                         continue;
                     }
 
-                    // 子音チェック
-                    if let Some(cons) = consonant {
-                        if let Some(&(exp_row, exp_col)) = phoneme_pos.get(cons) {
-                            if row == exp_row && col == exp_col {
-                                total_score += 1.0 * layer_weight;
-                            } else if row == exp_row {
-                                total_score += 0.5 * layer_weight;
-                            } else if (col < 5 && exp_col < 5) || (col >= 5 && exp_col >= 5) {
-                                total_score += 0.25 * layer_weight;
+                    // 子音チェック (col 10 は評価対象外)
+                    if col <= 9 {
+                        if let Some(cons) = consonant {
+                            if let Some(&(exp_row, exp_col)) = phoneme_pos.get(cons) {
+                                if row == exp_row && col == exp_col {
+                                    total_score += 1.0 * layer_weight;
+                                } else if row == exp_row {
+                                    total_score += 0.5 * layer_weight;
+                                } else if (col < 5 && exp_col < 5) || (col >= 5 && exp_col >= 5) {
+                                    total_score += 0.25 * layer_weight;
+                                }
                             }
                         }
-                    }
 
-                    // 母音チェック
-                    if let Some(vow) = vowel {
-                        if let Some(&(exp_row, exp_col)) = phoneme_pos.get(vow) {
-                            if row == exp_row && col == exp_col {
-                                total_score += 1.0 * layer_weight;
-                            } else if row == exp_row {
-                                total_score += 0.5 * layer_weight;
-                            } else if (col < 5 && exp_col < 5) || (col >= 5 && exp_col >= 5) {
-                                total_score += 0.25 * layer_weight;
+                        // 母音チェック
+                        if let Some(vow) = vowel {
+                            if let Some(&(exp_row, exp_col)) = phoneme_pos.get(vow) {
+                                if row == exp_row && col == exp_col {
+                                    total_score += 1.0 * layer_weight;
+                                } else if row == exp_row {
+                                    total_score += 0.5 * layer_weight;
+                                } else if (col < 5 && exp_col < 5) || (col >= 5 && exp_col >= 5) {
+                                    total_score += 0.25 * layer_weight;
+                                }
                             }
                         }
                     }
@@ -507,7 +464,7 @@ impl Evaluator {
 
     /// 月配列類似度を計算
     /// - GA Layer 0 → 月 表面 (layer 0)
-    /// - GA Layer 1, 2 → 月 裏面 (layer 1)
+    /// - GA Layer 1, 2, 3 → 月 裏面 (layer 1)
     fn calc_tsuki_similarity(&self, layout: &Layout) -> f64 {
         let mut matches = 0;
         let mut total = 0;
@@ -516,9 +473,10 @@ impl Evaluator {
             let expected_tsuki_layer = if ga_layer == 0 { 0 } else { 1 };
 
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     let c = &layout.layers[ga_layer][row][col];
-                    if c == "☆" || c == "★" || c == "、" || c == "。" || c == "　" || c == "\0" || c == "゛" || c == "゜" {
+                    if c == "☆" || c == "★" || c == "◆" || c == "、" || c == "。" || c == "ー" || c == "・" || c == ";" || c == "　" || c == "\0" || c == "゛" || c == "゜" {
                         continue;
                     }
 
@@ -527,7 +485,8 @@ impl Evaluator {
                     if let Some(&tsuki_pos) = self.tsuki.char_positions.get(&first_char) {
                         if tsuki_pos.layer == expected_tsuki_layer {
                             total += 1;
-                            if row == tsuki_pos.row && col == tsuki_pos.col {
+                            // col 10は月配列にないため完全一致は不可
+                            if col <= 9 && row == tsuki_pos.row && col == tsuki_pos.col {
                                 matches += 1;
                             }
                         }
@@ -554,7 +513,8 @@ impl Evaluator {
         let mut total_positions = 0;
 
         for row in 0..ROWS {
-            for col in 0..COLS {
+            let cols = cols_for_row(row);
+            for col in 0..cols {
                 if Layout::is_fixed_position(0, row, col) {
                     continue;
                 }
@@ -571,7 +531,7 @@ impl Evaluator {
                 let mut layer_checked = 0;
 
                 for layer in 1..NUM_LAYERS {
-                    if Layout::is_fixed_position(layer, row, col) {
+                    if Layout::is_fixed_position(layer, row, col) || Layout::is_blank_position(layer, row, col) {
                         continue;
                     }
 

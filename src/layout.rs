@@ -1,5 +1,5 @@
 //! 配列データ構造モジュール
-//! 
+//!
 //! キーボード配列を表現するためのデータ構造を提供する。
 
 use rand::seq::SliceRandom;
@@ -14,56 +14,84 @@ use std::collections::HashMap;
 /// キーボードの行数
 pub const ROWS: usize = 3;
 
-/// キーボードの列数
+/// キーボードの列数（Row 0, 2用）
 pub const COLS: usize = 10;
 
-/// レイヤー数（無シフト、Aシフト、Bシフト、Cシフト、Dシフト）
-pub const NUM_LAYERS: usize = 5;
+/// Row 1の列数（追加キー含む）
+pub const COLS_ROW1: usize = 11;
 
-/// 1レイヤーあたりのキー数
-pub const KEYS_PER_LAYER: usize = ROWS * COLS;
+/// レイヤー数（無シフト、☆シフト、★シフト、◆シフト）
+pub const NUM_LAYERS: usize = 4;
+
+/// 1レイヤーあたりのキー数 (10 + 11 + 10 = 31)
+pub const KEYS_PER_LAYER: usize = COLS + COLS_ROW1 + COLS;
+
+/// 行ごとの列数を取得
+pub fn cols_for_row(row: usize) -> usize {
+    if row == 1 { COLS_ROW1 } else { COLS }
+}
 
 /// キー配置ペナルティ（位置コスト）
+/// Row 0: 10列, Row 1: 11列, Row 2: 10列
 /// 0.0 は固定位置または空白位置
-pub const POSITION_COSTS: [[[f64; COLS]; ROWS]; NUM_LAYERS] = [
-    // Layer 0 (No Shift)
-    [
-        [3.7, 2.0, 2.0, 2.4, 3.5, 3.9, 2.4, 2.0, 2.0, 3.7],  // row 0 (全て配置可能)
-        [1.5, 0.0, 0.0, 1.0, 2.4, 2.4, 1.0, 0.0, 0.0, 1.5],  // row 1 (cols 1,2,7,8 = ◆,★,☆,◎)
-        [3.7, 2.8, 2.4, 2.0, 3.9, 3.0, 2.0, 0.0, 0.0, 3.7],  // row 2 (cols 7,8 = 、,。)
-    ],
-    // Layer 1 (A shift) - ー,・ は row2 cols 7,8
-    [
-        [6.0, 3.2, 3.2, 3.9, 5.5, 6.2, 3.9, 0.0, 0.0, 0.0],  // row 0 (cols 7-9 blank)
-        [2.4, 1.6, 1.6, 1.6, 3.9, 3.9, 1.6, 2.9, 0.0, 0.0],  // row 1 (cols 8-9 blank)
-        [6.0, 4.5, 3.9, 3.2, 6.2, 4.8, 3.2, 0.0, 0.0, 0.0],  // row 2 (cols 7,8 = ー,・, col 9 blank)
-    ],
-    // Layer 2 (B shift)
-    [
-        [0.0, 0.0, 0.0, 3.9, 5.5, 6.2, 3.9, 3.2, 3.2, 0.0],  // row 0 (cols 0-2,9 blank)
-        [0.0, 0.0, 2.9, 1.6, 3.9, 3.9, 1.6, 1.6, 1.6, 2.4],  // row 1 (cols 0-1 blank)
-        [0.0, 0.0, 0.0, 3.2, 6.2, 4.8, 3.2, 3.9, 4.5, 0.0],  // row 2 (cols 0-2,9 blank)
-    ],
-    // Layer 3 (C shift) - ; は row2 col8
-    [
-        [6.4, 3.4, 3.4, 4.2, 5.9, 6.6, 4.2, 3.4, 0.0, 0.0],  // row 0 (cols 8-9 blank)
-        [2.6, 1.7, 1.7, 1.7, 4.2, 4.2, 1.7, 1.7, 2.9, 0.0],  // row 1 (col 9 blank)
-        [6.4, 4.8, 4.2, 3.4, 6.6, 5.1, 3.4, 4.2, 0.0, 0.0],  // row 2 (col 8 = ;, col 9 blank)
-    ],
-    // Layer 4 (D shift)
-    [
-        [0.0, 0.0, 3.4, 4.2, 5.9, 6.6, 4.2, 3.4, 3.4, 0.0],  // row 0 (cols 0,1,9 blank)
-        [0.0, 2.9, 1.7, 1.7, 4.2, 4.2, 1.7, 1.7, 1.7, 2.6],  // row 1 (col 0 blank)
-        [0.0, 0.0, 4.2, 3.4, 6.6, 5.1, 3.4, 4.2, 4.8, 0.0],  // row 2 (cols 0,1,9 blank)
-    ],
+/// Layer 0: ★(row1,col2), ☆(row1,col7), ◆(row2,col9), 、(row2,col7), 。(row2,col8), ー(row1,col10)
+/// Layer 1: ・(row1,col10)
+/// Layer 2: blank(row1,col10)
+/// Layer 3: ;(row1,col10), blank(col9 all rows)
+pub const POSITION_COSTS_L0: [[f64; COLS_ROW1]; ROWS] = [
+    // Row 0 (10 cols, last element unused)
+    [3.7, 2.0, 2.0, 2.4, 3.5, 3.9, 2.4, 2.0, 2.0, 3.7, 0.0],
+    // Row 1 (11 cols): ★=col2, ☆=col7, ー=col10
+    [1.5, 1.0, 0.0, 1.0, 2.4, 2.4, 1.0, 0.0, 1.0, 1.5, 0.0],
+    // Row 2 (10 cols): 、=col7, 。=col8, ◆=col9, last element unused
+    [3.7, 2.8, 2.4, 2.0, 3.9, 3.0, 2.0, 0.0, 0.0, 0.0, 0.0],
 ];
 
+pub const POSITION_COSTS_L1: [[f64; COLS_ROW1]; ROWS] = [
+    // Row 0 (10 cols)
+    [10.9, 5.8, 5.8, 7.1, 10.0, 11.2, 7.1, 17.4, 11.6, 21.7, 0.0],
+    // Row 1 (11 cols): ・=col10
+    [4.4, 2.9, 2.9, 2.9, 7.1, 7.1, 2.9, 5.8, 5.8, 8.7, 0.0],
+    // Row 2 (10 cols)
+    [10.9, 8.2, 7.1, 5.8, 11.2, 8.7, 5.8, 21.3, 16.4, 21.7, 0.0],
+];
+
+pub const POSITION_COSTS_L2: [[f64; COLS_ROW1]; ROWS] = [
+    // Row 0 (10 cols)
+    [21.7, 11.6, 17.4, 7.1, 10.0, 11.2, 7.1, 5.8, 5.8, 10.9, 0.0],
+    // Row 1 (11 cols): blank=col10
+    [8.7, 5.8, 5.8, 2.9, 7.1, 7.1, 2.9, 2.9, 2.9, 4.4, 0.0],
+    // Row 2 (10 cols)
+    [21.7, 16.4, 21.3, 5.8, 11.2, 8.7, 5.8, 7.1, 8.2, 10.9, 0.0],
+];
+
+pub const POSITION_COSTS_L3: [[f64; COLS_ROW1]; ROWS] = [
+    // Row 0 (10 cols): blank=col9
+    [80.8, 43.2, 43.2, 52.9, 74.8, 83.7, 52.9, 43.2, 43.2, 0.0, 0.0],
+    // Row 1 (11 cols): blank=col9, ;=col10
+    [32.4, 21.6, 21.6, 21.6, 52.9, 52.9, 21.6, 21.6, 21.6, 0.0, 0.0],
+    // Row 2 (10 cols): blank=col9
+    [80.8, 61.1, 52.9, 43.2, 83.7, 64.8, 43.2, 52.9, 61.1, 0.0, 0.0],
+];
+
+/// 全レイヤーの位置コストを取得
+pub fn get_position_cost(layer: usize, row: usize, col: usize) -> f64 {
+    match layer {
+        0 => POSITION_COSTS_L0[row][col],
+        1 => POSITION_COSTS_L1[row][col],
+        2 => POSITION_COSTS_L2[row][col],
+        3 => POSITION_COSTS_L3[row][col],
+        _ => 0.0,
+    }
+}
+
 /// ひらがな文字のデフォルト頻度順リスト（フォールバック用）
-/// 114文字: 1gram(73) + 小書き(7:ぁぃぅぇぉゃょ) + ゃゅょ終わり2gram(34)
-/// ぁぃぅぇぉで終わる2gramは除外（うぃ、ふぁ等は小書き1gramで組み合わせ可能）
-/// 固定文字(9個): 、, 。, ・, ー, ;, ◆, ★, ☆, ◎
+/// 112文字: 1gram(73) + 小書き(5:ぁぃぅぇぉ) + ゃゅょ終わり2gram(34)
+/// 固定文字(8個): ★, ☆, ◆, 、, 。, ー, ・, ;
+/// 配置可能位置: 124 - 8(固定) - 4(空白) = 112
+/// Note: ゃ, ょ は 2gram でのみ使用（単独配置なし）
 pub const HIRAGANA_FREQ_DEFAULT: &[&str] = &[
-    // 1gram (73文字)
+    // 1gram (73文字) - ー は固定文字なので含まない
     "い", "う", "ん", "し", "か", "の", "と", "た", "て", "く",
     "な", "に", "き", "は", "こ", "る", "が", "で", "っ", "す",
     "ま", "じ", "り", "も", "つ", "お", "ら", "を", "さ", "あ",
@@ -72,9 +100,9 @@ pub const HIRAGANA_FREQ_DEFAULT: &[&str] = &[
     "ご", "ぎ", "げ", "む", "ず", "び", "ざ", "ぐ", "ぜ", "へ",
     "べ", "ゆ", "ぼ", "ぷ", "ぞ", "ぱ", "ぽ", "づ", "ぴ", "ぬ",
     "ぺ", "ヴ", "ぢ",
-    // 小書き (7文字)
-    "ぁ", "ぃ", "ぅ", "ぇ", "ぉ", "ゃ", "ょ",
-    // ゃゅょ終わり2gram (34文字) - ぁぃぅぇぉ終わりは除外
+    // 小書き (5文字) - ゃ, ょ は2gramでのみ使用
+    "ぁ", "ぃ", "ぅ", "ぇ", "ぉ",
+    // ゃゅょ終わり2gram (34文字)
     "しょ", "じょ", "しゅ", "きょ", "しゃ", "ちょ", "じゅ", "りょ",
     "きゅ", "ちゅ", "ぎょ", "にゅ", "ひょ", "じゃ", "ちゃ", "りゅ",
     "きゃ", "びょ", "りゃ", "ぎゃ", "ぴょ", "ぴゅ", "びゅ", "みょ",
@@ -89,11 +117,11 @@ pub const HIRAGANA_FREQ_DEFAULT: &[&str] = &[
 /// キーの位置を表す構造体
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct KeyPos {
-    /// レイヤー（0: 無シフト, 1: ☆シフト, 2: ★シフト）
+    /// レイヤー（0: 無シフト, 1: ☆シフト, 2: ★シフト, 3: ◆シフト）
     pub layer: usize,
     /// 行（0: 上段, 1: 中段, 2: 下段）
     pub row: usize,
-    /// 列（0-9）
+    /// 列（Row0,2: 0-9, Row1: 0-10）
     pub col: usize,
 }
 
@@ -140,6 +168,7 @@ impl KeyPos {
             2 | 7 => 1.1,          // 中指
             1 | 8 => 1.2,          // 薬指
             0 | 9 => 1.4,          // 小指
+            10 => 1.5,             // 追加キー（row1のみ）
             _ => 1.5,
         };
 
@@ -148,8 +177,7 @@ impl KeyPos {
             0 => 1.0,       // 無シフト
             1 => 2.0,       // 中指シフト（☆）
             2 => 2.2,       // 中指シフト（★）
-            3 => 2.2,       // 薬指シフト（◎）
-            4 => 2.3,       // 薬指シフト（◆）
+            3 => 3.0,       // 薬指シフト（◆）
             _ => 3.0,
         };
 
@@ -164,7 +192,8 @@ impl KeyPos {
 /// キーボード配列を表す構造体
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Layout {
-    /// 5層の配列データ [layer][row][col] - String型（1文字 or 2文字の拗音対応）
+    /// 4層の配列データ [layer][row][col] - String型（1文字 or 2文字の拗音対応）
+    /// Row0: 10列, Row1: 11列, Row2: 10列
     pub layers: Vec<Vec<Vec<String>>>,
 
     /// 評価フィットネス値
@@ -216,8 +245,9 @@ impl Default for Layout {
         let layers = (0..NUM_LAYERS)
             .map(|_| {
                 (0..ROWS)
-                    .map(|_| {
-                        (0..COLS)
+                    .map(|row| {
+                        let cols = cols_for_row(row);
+                        (0..cols)
                             .map(|_| "　".to_string())
                             .collect::<Vec<_>>()
                     })
@@ -235,45 +265,63 @@ impl Default for Layout {
 
 impl Layout {
     /// 改善版カスタムレイアウト（初期配置として使用）
-    /// シフトキー: ◆(col1) → Layer4, ★(col2) → Layer2, ☆(col7) → Layer1, ◎(col8) → Layer3
-    /// 固定文字(9個): 、, 。, ・, ー, ;, ◆, ★, ☆, ◎
+    /// シフトキー: ★(row1,col2) → Layer2, ☆(row1,col7) → Layer1, ◆(row2,col9) → Layer3
+    /// 固定文字(8個): ★, ☆, ◆, 、, 。, ー, ・, ;
     pub fn improved_custom() -> Self {
         let mut layers: Vec<Vec<Vec<String>>> = (0..NUM_LAYERS)
             .map(|_| {
                 (0..ROWS)
-                    .map(|_| vec!["　".to_string(); COLS])
+                    .map(|row| {
+                        let cols = cols_for_row(row);
+                        vec!["　".to_string(); cols]
+                    })
                     .collect()
             })
             .collect();
 
         // Layer 0 (No Shift)
-        layers[0][0] = vec!["ぐ", "も", "ら", "れ", "ちょ", "ゆ", "だ", "り", "を", "ぜ"].iter().map(|s| s.to_string()).collect();
-        layers[0][1] = vec!["し", "◆", "★", "う", "ち", "け", "い", "☆", "◎", "ん"].iter().map(|s| s.to_string()).collect();
-        layers[0][2] = vec!["ざ", "そ", "せ", "お", "べ", "ひ", "つ", "、", "。", "へ"].iter().map(|s| s.to_string()).collect();
+        // Row 0: 10 cols
+        layers[0][0] = vec!["あ", "と", "に", "る", "を", "ち", "こ", "く", "て", "さ"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 1: 11 cols (★=col2, ☆=col7, ー=col10)
+        layers[0][1] = vec!["か", "う", "★", "し", "た", "き", "ん", "☆", "い", "の", "ー"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 2: 10 cols (、=col7, 。=col8, ◆=col9)
+        layers[0][2] = vec!["れ", "で", "が", "な", "だ", "ら", "は", "、", "。", "◆"]
+            .iter().map(|s| s.to_string()).collect();
 
-        // Layer 1 (☆シフト) - col=7右中指前置で発動
-        // 右側(cols 7,8,9)は row0全て、row1-2は8,9が空白
-        layers[1][0] = vec!["ぎゅ", "ろ", "ぶ", "ぼ", "びゅ", "にゃ", "ぷ", "　", "　", "　"].iter().map(|s| s.to_string()).collect();
-        layers[1][1] = vec!["あ", "な", "の", "と", "ぱ", "ぎょ", "く", "え", "　", "　"].iter().map(|s| s.to_string()).collect();
-        layers[1][2] = vec!["みゅ", "きゃ", "きゅ", "や", "にょ", "りゃ", "しょ", "ー", "・", "　"].iter().map(|s| s.to_string()).collect();
+        // Layer 1 (☆シフト) - row1,col7で発動
+        // Row 0: 10 cols
+        layers[1][0] = vec!["べ", "ど", "わ", "しゅ", "ぐ", "ぞ", "ぎ", "ぽ", "きゅ", "ぺ"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 1: 11 cols (・=col10)
+        layers[1][1] = vec!["せ", "じ", "す", "つ", "ぶ", "ふ", "っ", "ほ", "ろ", "ざ", "・"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 2: 10 cols
+        layers[1][2] = vec!["じゅ", "ず", "む", "ひ", "ぷ", "び", "み", "にゅ", "ちゅ", "ぬ"]
+            .iter().map(|s| s.to_string()).collect();
 
-        // Layer 2 (★シフト) - col=2左中指前置で発動
-        // 左側(cols 0,1,2,9)は row0で空白、row1は0,1、row2は0,1,2,9が空白
-        layers[2][0] = vec!["　", "　", "　", "じゅ", "ぢ", "みゃ", "りょ", "ば", "ね", "　"].iter().map(|s| s.to_string()).collect();
-        layers[2][1] = vec!["　", "　", "わ", "た", "ぞ", "ぃ", "て", "か", "に", "さ"].iter().map(|s| s.to_string()).collect();
-        layers[2][2] = vec!["　", "　", "　", "ほ", "ぅ", "ぉ", "ふ", "ちゅ", "びょ", "　"].iter().map(|s| s.to_string()).collect();
+        // Layer 2 (★シフト) - row1,col2で発動
+        // Row 0: 10 cols
+        layers[2][0] = vec!["りゅ", "ぱ", "ぃ", "げ", "ぜ", "りょ", "ご", "や", "め", "ゆ"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 1: 11 cols (blank=col10)
+        layers[2][1] = vec!["ちょ", "そ", "よ", "も", "ね", "しょ", "ま", "り", "お", "け", "　"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 2: 10 cols
+        layers[2][2] = vec!["きゃ", "ぎょ", "ひょ", "ば", "ぼ", "しゃ", "え", "じょ", "きょ", "へ"]
+            .iter().map(|s| s.to_string()).collect();
 
-        // Layer 3 (◎シフト) - col=8右薬指前置で発動
-        // 右側(cols 8,9)は row0,2で空白、row1はcol9のみ空白
-        layers[3][0] = vec!["びゃ", "じょ", "び", "にゅ", "みょ", "ゃ", "ひょ", "ぎ", "　", "　"].iter().map(|s| s.to_string()).collect();
-        layers[3][1] = vec!["ど", "ま", "る", "っ", "づ", "りゅ", "す", "き", "め", "　"].iter().map(|s| s.to_string()).collect();
-        layers[3][2] = vec!["ひゅ", "ぎゃ", "ちゃ", "しゅ", "ぴゃ", "ヴ", "きょ", "ぬ", ";", "　"].iter().map(|s| s.to_string()).collect();
-
-        // Layer 4 (◆シフト) - col=1左薬指前置で発動
-        // 左側(cols 0,1)と右端(col9)がrow0,2で空白、row1はcol0のみ空白
-        layers[4][0] = vec!["　", "　", "ず", "ぽ", "ひゃ", "ょ", "ぇ", "ご", "しゃ", "　"].iter().map(|s| s.to_string()).collect();
-        layers[4][1] = vec!["　", "み", "こ", "が", "じゃ", "ぺ", "で", "は", "じ", "よ"].iter().map(|s| s.to_string()).collect();
-        layers[4][2] = vec!["　", "　", "ぴ", "げ", "ぢゃ", "ぴゅ", "む", "ぁ", "ぴょ", "　"].iter().map(|s| s.to_string()).collect();
+        // Layer 3 (◆シフト) - row2,col9で発動
+        // Row 0: 10 cols (blank=col9)
+        layers[3][0] = vec!["ひゅ", "りゃ", "ぎゃ", "みゅ", "にゃ", "ぢゃ", "みょ", "ヴ", "ぴょ", "　"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 1: 11 cols (blank=col9, ;=col10)
+        layers[3][1] = vec!["びょ", "じゃ", "ぇ", "ぴ", "ぢ", "びゅ", "づ", "ぁ", "ちゃ", "　", ";"]
+            .iter().map(|s| s.to_string()).collect();
+        // Row 2: 10 cols (blank=col9)
+        layers[3][2] = vec!["びゃ", "ぅ", "ぎゅ", "ぴゅ", "ぴゃ", "みゃ", "ぉ", "ひゃ", "にょ", "　"]
+            .iter().map(|s| s.to_string()).collect();
 
         Self {
             layers,
@@ -292,36 +340,19 @@ impl Layout {
     pub fn random_with_chars(rng: &mut ChaCha8Rng, hiragana_chars: &[&str]) -> Self {
         let mut chars: Vec<String> = hiragana_chars.iter().map(|s| s.to_string()).collect();
 
-        // 空白位置を事前に計算（シフトキーと同手で押せない位置）
-        // Layer 1 (☆シフト, col=7右中指): 右側制限
-        //   - Row 0: cols 7,8,9 = 3 blanks
-        //   - Row 1: cols 8,9 = 2 blanks
-        //   - Row 2: col 9 = 1 blank (cols 7,8は ー,・ 固定)
-        // Layer 2 (★シフト, col=2左中指): 左側制限
-        //   - Row 0: cols 0,1,2,9 = 4 blanks
-        //   - Row 1: cols 0,1 = 2 blanks
-        //   - Row 2: cols 0,1,2,9 = 4 blanks
-        // Layer 3 (◎シフト, col=8右薬指): 右側制限
-        //   - Row 0: cols 8,9 = 2 blanks
-        //   - Row 1: col 9 = 1 blank
-        //   - Row 2: col 9 = 1 blank (col 8は ; 固定)
-        // Layer 4 (◆シフト, col=1左薬指): 左側+右端制限
-        //   - Row 0: cols 0,1,9 = 3 blanks
-        //   - Row 1: col 0 = 1 blank
-        //   - Row 2: cols 0,1,9 = 3 blanks
-        //
-        // 固定位置 (9):
-        //   Layer 0: ◆,★,☆,◎ (4) + 、,。 (2) = 6
-        //   Layer 1: ー,・ (2) = 2
+        // 固定位置 (8):
+        //   Layer 0: ★,☆,◆ (3) + 、,。,ー (3) = 6
+        //   Layer 1: ・ (1) = 1
         //   Layer 3: ; (1) = 1
-        // シフト制限空白 (27):
-        //   Layer 1: 6, Layer 2: 10, Layer 3: 4, Layer 4: 7
-        // 配置可能: 150 - 9 - 27 = 114ポジション
-        const FIXED_COUNT: usize = 9;
-        const SHIFT_BLANK_COUNT: usize = 27;
+        // シフト制限空白 (4):
+        //   Layer 2: row1,col10 = 1
+        //   Layer 3: col9 all rows = 3
+        // 配置可能: 124 - 8 - 4 = 112ポジション
+        const FIXED_COUNT: usize = 8;
+        const SHIFT_BLANK_COUNT: usize = 4;
         let total_positions = KEYS_PER_LAYER * NUM_LAYERS - FIXED_COUNT - SHIFT_BLANK_COUNT;
 
-        // 119個分の文字を用意（足りなければ空白で埋める）
+        // 112個分の文字を用意（足りなければ空白で埋める）
         while chars.len() < total_positions {
             chars.push("　".to_string());
         }
@@ -333,30 +364,33 @@ impl Layout {
         let mut layers: Vec<Vec<Vec<String>>> = (0..NUM_LAYERS)
             .map(|_| {
                 (0..ROWS)
-                    .map(|_| vec!["　".to_string(); COLS])
+                    .map(|row| {
+                        let cols = cols_for_row(row);
+                        vec!["　".to_string(); cols]
+                    })
                     .collect()
             })
             .collect();
 
         // 固定文字の配置
-        // Layer 0: シフトキーと句読点
-        layers[0][1][1] = "◆".to_string();  // Layer 4
-        layers[0][1][2] = "★".to_string();  // Layer 2
-        layers[0][1][7] = "☆".to_string();  // Layer 1
-        layers[0][1][8] = "◎".to_string();  // Layer 3
+        // Layer 0: シフトキーと句読点、長音符
+        layers[0][1][2] = "★".to_string();   // Layer 2
+        layers[0][1][7] = "☆".to_string();   // Layer 1
+        layers[0][2][9] = "◆".to_string();   // Layer 3
         layers[0][2][7] = "、".to_string();
         layers[0][2][8] = "。".to_string();
-        // Layer 1: ー,・
-        layers[1][2][7] = "ー".to_string();
-        layers[1][2][8] = "・".to_string();
+        layers[0][1][10] = "ー".to_string();
+        // Layer 1: 中黒
+        layers[1][1][10] = "・".to_string();
         // Layer 3: セミコロン
-        layers[3][2][8] = ";".to_string();
+        layers[3][1][10] = ";".to_string();
 
-        // シャッフルした文字を配置（固定位置と空白位置を除く119ポジション）
+        // シャッフルした文字を配置（固定位置と空白位置を除く112ポジション）
         let mut char_idx = 0;
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     // 固定位置と空白位置をスキップ
                     if !Self::is_fixed_position(layer, row, col) && !Self::is_blank_position(layer, row, col) {
                         if char_idx < chars.len() {
@@ -380,57 +414,46 @@ impl Layout {
     }
 
     /// シフト制限による空白位置かどうかを判定
+    /// Layer 2, row1, col10: blank (★と同時押し不可)
+    /// Layer 3, col9: blank (◆と同じ列で押せない)
     pub fn is_blank_position(layer: usize, row: usize, col: usize) -> bool {
         match layer {
-            // Layer 1 (☆シフト): 右側制限
-            1 => {
-                if row == 0 && col >= 7 { return true; }  // row 0: cols 7,8,9
-                if row == 1 && col >= 8 { return true; }  // row 1: cols 8,9
-                if row == 2 && col == 9 { return true; }  // row 2: col 9 (cols 7,8は ー,・ 固定)
-                false
-            }
-            // Layer 2 (★シフト): 左側制限
+            // Layer 2 (★シフト): row1,col10のみ空白
             2 => {
-                if row == 0 && (col <= 2 || col == 9) { return true; }  // row 0: cols 0,1,2,9
-                if row == 1 && col <= 1 { return true; }  // row 1: cols 0,1
-                if row == 2 && (col <= 2 || col == 9) { return true; }  // row 2: cols 0,1,2,9
-                false
+                row == 1 && col == 10
             }
-            // Layer 3 (◎シフト): 右側制限
+            // Layer 3 (◆シフト): col9が全row空白
             3 => {
-                if row == 0 && col >= 8 { return true; }  // row 0: cols 8,9
-                if row == 1 && col == 9 { return true; }  // row 1: col 9
-                if row == 2 && col == 9 { return true; }  // row 2: col 9 (col 8は ; 固定)
-                false
-            }
-            // Layer 4 (◆シフト): 左側+右端制限
-            4 => {
-                if row == 0 && (col <= 1 || col == 9) { return true; }  // row 0: cols 0,1,9
-                if row == 1 && col == 0 { return true; }  // row 1: col 0
-                if row == 2 && (col <= 1 || col == 9) { return true; }  // row 2: cols 0,1,9
-                false
+                col == 9
             }
             _ => false,
         }
     }
 
     /// 固定位置かどうかを判定
-    /// 固定文字(9個): ◆, ★, ☆, ◎ (シフトキー) + 、, 。 (Layer0) + ー, ・ (Layer1) + ; (Layer3)
+    /// 固定文字(8個): ★, ☆, ◆ (シフトキー) + 、, 。, ー (Layer0) + ・ (Layer1) + ; (Layer3)
     pub fn is_fixed_position(layer: usize, row: usize, col: usize) -> bool {
-        // Layer 0：シフトキー位置（◆=col1, ★=col2, ☆=col7, ◎=col8）
-        if layer == 0 && row == 1 && (col == 1 || col == 2 || col == 7 || col == 8) {
+        // Layer 0：シフトキー位置（★=row1,col2, ☆=row1,col7, ◆=row2,col9）
+        if layer == 0 && row == 1 && (col == 2 || col == 7) {
             return true;
         }
-        // Layer 0：句読点（、, 。）
+        if layer == 0 && row == 2 && col == 9 {
+            return true;  // ◆
+        }
+        // Layer 0：句読点（、=row2,col7, 。=row2,col8）
         if layer == 0 && row == 2 && (col == 7 || col == 8) {
             return true;
         }
-        // Layer 1：ー, ・
-        if layer == 1 && row == 2 && (col == 7 || col == 8) {
+        // Layer 0：長音符（ー=row1,col10）
+        if layer == 0 && row == 1 && col == 10 {
             return true;
         }
-        // Layer 3：セミコロン（;）
-        if layer == 3 && row == 2 && col == 8 {
+        // Layer 1：中黒（・=row1,col10）
+        if layer == 1 && row == 1 && col == 10 {
+            return true;
+        }
+        // Layer 3：セミコロン（;=row1,col10）
+        if layer == 3 && row == 1 && col == 10 {
             return true;
         }
         false
@@ -440,7 +463,8 @@ impl Layout {
     pub fn find_char(&self, c: &str) -> Option<KeyPos> {
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     if self.layers[layer][row][col] == c {
                         return Some(KeyPos::new(layer, row, col));
                     }
@@ -456,7 +480,8 @@ impl Layout {
         let mut map = HashMap::new();
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     let s = &self.layers[layer][row][col];
                     if let Some(c) = s.chars().next() {
                         if c != '　' && c != '\0' {
@@ -476,17 +501,17 @@ impl Layout {
         for layer in 0..NUM_LAYERS {
             let label = match layer {
                 0 => "Layer 0 (無シフト)",
-                1 => "Layer 1 (Aシフト)",
-                2 => "Layer 2 (Bシフト)",
-                3 => "Layer 3 (Cシフト)",
-                4 => "Layer 4 (Dシフト)",
+                1 => "Layer 1 (☆シフト)",
+                2 => "Layer 2 (★シフト)",
+                3 => "Layer 3 (◆シフト)",
                 _ => "Unknown",
             };
             result.push_str(&format!("{}:\n", label));
 
             for row in 0..ROWS {
                 result.push_str("  ");
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     let s = &self.layers[layer][row][col];
                     result.push_str(s);
                     result.push(' ');
@@ -510,7 +535,8 @@ impl Layout {
         // 全ポジションをスキャン
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     // 固定位置と空白位置はスキップ
                     if Self::is_fixed_position(layer, row, col) {
                         continue;

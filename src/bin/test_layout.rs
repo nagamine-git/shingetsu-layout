@@ -1,27 +1,27 @@
-use kana_layout_optimizer::layout::{Layout, HIRAGANA_FREQ_DEFAULT};
+use kana_layout_optimizer::layout::{Layout, HIRAGANA_FREQ_DEFAULT, cols_for_row, NUM_LAYERS, ROWS};
 
 fn main() {
-    println!("=== 新月配列 v2.0 テスト ===\n");
+    println!("=== 新月配列 v2.0 テスト（4層版）===\n");
 
     // 初期配列を表示
     let layout = Layout::improved_custom();
 
-    println!("初期配列（5層）:\n");
+    println!("初期配列（4層）:\n");
 
-    for layer in 0..5 {
+    for layer in 0..NUM_LAYERS {
         let layer_name = match layer {
             0 => "Layer 0 (No Shift)",
-            1 => "Layer 1 (A shift)",
-            2 => "Layer 2 (B shift)",
-            3 => "Layer 3 (C shift)",
-            4 => "Layer 4 (D shift)",
+            1 => "Layer 1 (☆ shift)",
+            2 => "Layer 2 (★ shift)",
+            3 => "Layer 3 (◆ shift)",
             _ => "Unknown",
         };
 
         println!("## {}", layer_name);
-        for row in 0..3 {
+        for row in 0..ROWS {
             print!("  ");
-            for col in 0..10 {
+            let cols = cols_for_row(row);
+            for col in 0..cols {
                 let c = &layout.layers[layer][row][col];
                 // 1文字なら1文字分、2文字なら2文字分表示
                 if c.chars().count() == 1 {
@@ -41,11 +41,12 @@ fn main() {
     let mut blank_count = 0;
     let mut fixed_count = 0;
 
-    let fixed_chars = ["☆", "★", "◎", "◆", "、", "。", "・", "ー", ";"];
+    let fixed_chars = ["★", "☆", "◆", "、", "。", "ー", "・", ";"];
 
-    for layer in 0..5 {
-        for row in 0..3 {
-            for col in 0..10 {
+    for layer in 0..NUM_LAYERS {
+        for row in 0..ROWS {
+            let cols = cols_for_row(row);
+            for col in 0..cols {
                 let c = &layout.layers[layer][row][col];
                 if c == "　" {
                     blank_count += 1;
@@ -65,8 +66,9 @@ fn main() {
     println!("  2gram文字（拗音）: {}", gram2_count);
     println!("  配置文字合計: {}", gram1_count + gram2_count);
     println!("  空白: {}", blank_count);
-    println!("  固定文字: {} (◆,★,☆,◎,、,。,・,ー,;)", fixed_count);
-    println!("  総計: {} (=150)", gram1_count + gram2_count + blank_count + fixed_count);
+    println!("  固定文字: {} (★,☆,◆,、,。,ー,・,;)", fixed_count);
+    let total = gram1_count + gram2_count + blank_count + fixed_count;
+    println!("  総計: {} (= 4層 x 31 = 124)", total);
 
     println!("\n=== HIRAGANA_FREQ_DEFAULT ===");
     println!("  文字数: {}", HIRAGANA_FREQ_DEFAULT.len());

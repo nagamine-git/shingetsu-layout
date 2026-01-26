@@ -8,7 +8,7 @@ use rayon::prelude::*;
 
 use crate::corpus::CorpusStats;
 use crate::evaluation::{EvaluationWeights, Evaluator};
-use crate::layout::{Layout, NUM_LAYERS, ROWS, COLS, HIRAGANA_FREQ_DEFAULT};
+use crate::layout::{Layout, NUM_LAYERS, ROWS, cols_for_row, HIRAGANA_FREQ_DEFAULT};
 
 /// 遺伝的アルゴリズムの設定
 #[derive(Debug, Clone)]
@@ -136,7 +136,7 @@ impl GeneticAlgorithm {
         use std::collections::HashSet;
 
         // 固定文字（配置対象外）
-        let fixed_chars: HashSet<&str> = ["◆", "★", "☆", "◎", "ー", "、", "。", "・", ";"].iter().copied().collect();
+        let fixed_chars: HashSet<&str> = ["★", "☆", "◆", "、", "。", "ー", "・", ";"].iter().copied().collect();
 
         // 固定文字を除外してコピー
         let mut result: Vec<String> = corpus_chars
@@ -276,7 +276,8 @@ impl GeneticAlgorithm {
         // 各ポジションで親をランダムに選択
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     if Layout::is_fixed_position(layer, row, col) {
                         child.layers[layer][row][col] = parent1.layers[layer][row][col].clone();
                     } else if Layout::is_blank_position(layer, row, col) {
@@ -299,20 +300,18 @@ impl GeneticAlgorithm {
     fn mutate(&mut self, layout: &mut Layout) {
         // ランダムな非固定位置を2つ選択してスワップ
         // 空白位置（シフト制限）もスワップから除外
-        let positions: Vec<(usize, usize, usize)> = (0..NUM_LAYERS)
-            .flat_map(|l| {
-                (0..ROWS).flat_map(move |r| {
-                    (0..COLS).filter_map(move |c| {
-                        // 固定位置と空白位置はスワップ禁止
-                        if !Layout::is_fixed_position(l, r, c) && !Layout::is_blank_position(l, r, c) {
-                            Some((l, r, c))
-                        } else {
-                            None
-                        }
-                    })
-                })
-            })
-            .collect();
+        let mut positions: Vec<(usize, usize, usize)> = Vec::new();
+        for l in 0..NUM_LAYERS {
+            for r in 0..ROWS {
+                let cols = cols_for_row(r);
+                for c in 0..cols {
+                    // 固定位置と空白位置はスワップ禁止
+                    if !Layout::is_fixed_position(l, r, c) && !Layout::is_blank_position(l, r, c) {
+                        positions.push((l, r, c));
+                    }
+                }
+            }
+        }
 
         if positions.len() >= 2 {
             let idx1 = self.rng.gen_range(0..positions.len());
@@ -334,23 +333,25 @@ impl GeneticAlgorithm {
         use std::collections::HashSet;
 
         // まず、固定位置を強制的に設定（交叉で壊れた場合に備える）
-        // Layer 0: シフトキー（◆,★,☆,◎）と句読点
-        layout.layers[0][1][1] = "◆".to_string();  // 左薬指 → Layer 4
-        layout.layers[0][1][2] = "★".to_string();  // 左中指 → Layer 2
-        layout.layers[0][1][7] = "☆".to_string();  // 右中指 → Layer 1
-        layout.layers[0][1][8] = "◎".to_string();  // 右薬指 → Layer 3
-        layout.layers[0][0][9] = "ー".to_string();  // 長音符
+        // Layer 0: シフトキー（★,☆,◆）と句読点、長音符
+        layout.layers[0][1][2] = "★".to_string();   // 左中指 → Layer 2
+        layout.layers[0][1][7] = "☆".to_string();   // 右中指 → Layer 1
+        layout.layers[0][2][9] = "◆".to_string();   // 右小指 → Layer 3
         layout.layers[0][2][7] = "、".to_string();
         layout.layers[0][2][8] = "。".to_string();
-        layout.layers[0][2][9] = "・".to_string();
+        layout.layers[0][1][10] = "ー".to_string(); // 長音符
 
-        // Layer 2: セミコロン
-        layout.layers[2][0][9] = ";".to_string();
+        // Layer 1: 中黒
+        layout.layers[1][1][10] = "・".to_string();
+
+        // Layer 3: セミコロン
+        layout.layers[3][1][10] = ";".to_string();
 
         // 空白位置を強制設定（シフトキーと同手の制限位置）
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     if Layout::is_blank_position(layer, row, col) {
                         layout.layers[layer][row][col] = "　".to_string();
                     }
@@ -359,7 +360,7 @@ impl GeneticAlgorithm {
         }
 
         // 固定文字のセット（重複検出でスキップ）
-        let fixed_chars: HashSet<&str> = ["◆", "★", "☆", "◎", "ー", "、", "。", "・", ";"].iter().copied().collect();
+        let fixed_chars: HashSet<&str> = ["★", "☆", "◆", "、", "。", "ー", "・", ";"].iter().copied().collect();
 
         let mut seen: HashSet<String> = HashSet::new();
         let mut missing: Vec<String> = Vec::new();
@@ -368,7 +369,8 @@ impl GeneticAlgorithm {
         // 重複を検出
         for layer in 0..NUM_LAYERS {
             for row in 0..ROWS {
-                for col in 0..COLS {
+                let cols = cols_for_row(row);
+                for col in 0..cols {
                     // 固定位置と空白位置はスキップ
                     if Layout::is_fixed_position(layer, row, col) {
                         continue;

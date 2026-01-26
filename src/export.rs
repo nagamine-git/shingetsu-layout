@@ -2,7 +2,7 @@
 //!
 //! 生成された配列を複数の形式でエクスポートする。
 
-use crate::layout::{Layout, COLS, ROWS};
+use crate::layout::{Layout, cols_for_row, COLS, ROWS};
 use std::collections::HashMap;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -117,13 +117,14 @@ pub fn export_all(layout: &Layout, base_name: &str) {
 /// JSON形式でエクスポート（既存形式）
 pub fn export_json(layout: &Layout, path: &Path) {
     let json = serde_json::json!({
-        "name": "新月配列 (Shingetsu Layout)",
+        "name": "新月配列 v2.0 (Shingetsu Layout)",
         "fitness": layout.fitness,
         "scores": layout.scores,
         "layers": {
             "no_shift": layout.layers[0],
-            "shift_a": layout.layers[1],
-            "shift_b": layout.layers[2],
+            "shift_star": layout.layers[1],  // ☆シフト
+            "shift_star2": layout.layers[2], // ★シフト
+            "shift_diamond": layout.layers[3], // ◆シフト
         }
     });
 
@@ -157,42 +158,40 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
         {"id": "bs", "legend": ["BS"], "size": 2, "finger": 9}
     ]));
 
-    // 上段
+    // 上段 (10 cols)
     let mut top_row = vec![serde_json::json!({"id": "tab", "legend": ["Tab"], "size": 1.5, "finger": 0})];
     for col in 0..10 {
         let l0 = &layout.layers[0][0][col];
         let l1 = &layout.layers[1][0][col];
         let l2 = &layout.layers[2][0][col];
         let l3 = &layout.layers[3][0][col];
-        let l4 = &layout.layers[4][0][col];
         let key_id = QWERTY_KEYS[0][col];
         let finger = if col < 5 { col.min(3) } else { 6 + (col - 5).min(3) };
         top_row.push(serde_json::json!({
             "id": key_id,
-            "legend": [l0.clone(), l1.clone(), l2.clone(), l3.clone(), l4.clone()],
+            "legend": [l0.clone(), l1.clone(), l2.clone(), l3.clone()],
             "size": 1,
             "finger": finger
         }));
     }
-    top_row.push(serde_json::json!({"id": "[", "legend": ["「", "「", "「"], "size": 1, "finger": 9}));
-    top_row.push(serde_json::json!({"id": "]", "legend": ["」", "」", "」"], "size": 1, "finger": 9}));
+    top_row.push(serde_json::json!({"id": "[", "legend": ["「", "「", "「", "「"], "size": 1, "finger": 9}));
+    top_row.push(serde_json::json!({"id": "]", "legend": ["」", "」", "」", "」"], "size": 1, "finger": 9}));
     top_row.push(serde_json::json!({"id": "\\", "legend": ["\\", "|"], "size": 1.5, "finger": 9}));
     keys.push(serde_json::Value::Array(top_row));
 
-    // 中段
+    // 中段 (11 cols - includes the extra ' key)
     let mut mid_row = vec![serde_json::json!({"id": "caps", "legend": ["Caps Lock"], "size": 1.75, "finger": 0})];
     for col in 0..10 {
         let l0 = &layout.layers[0][1][col];
         let l1 = &layout.layers[1][1][col];
         let l2 = &layout.layers[2][1][col];
         let l3 = &layout.layers[3][1][col];
-        let l4 = &layout.layers[4][1][col];
         let key_id = QWERTY_KEYS[1][col];
         let finger = if col < 5 { col.min(3) } else { 6 + (col - 5).min(3) };
         let is_home = col >= 3 && col <= 6 || col == 0 || col == 9;
         let mut key_obj = serde_json::json!({
             "id": key_id,
-            "legend": [l0.clone(), l1.clone(), l2.clone(), l3.clone(), l4.clone()],
+            "legend": [l0.clone(), l1.clone(), l2.clone(), l3.clone()],
             "size": 1,
             "finger": finger
         });
@@ -201,23 +200,32 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
         }
         mid_row.push(key_obj);
     }
-    mid_row.push(serde_json::json!({"id": "'", "legend": ["'", "'", "'"], "size": 1, "finger": 9}));
+    // col 10 (extra key for ー/・/;)
+    let l0_extra = &layout.layers[0][1][10];
+    let l1_extra = &layout.layers[1][1][10];
+    let l2_extra = &layout.layers[2][1][10];
+    let l3_extra = &layout.layers[3][1][10];
+    mid_row.push(serde_json::json!({
+        "id": "'",
+        "legend": [l0_extra.clone(), l1_extra.clone(), l2_extra.clone(), l3_extra.clone()],
+        "size": 1,
+        "finger": 9
+    }));
     mid_row.push(serde_json::json!({"id": "enter", "legend": ["Enter"], "size": 2.25, "finger": 9}));
     keys.push(serde_json::Value::Array(mid_row));
 
-    // 下段
+    // 下段 (10 cols)
     let mut bot_row = vec![serde_json::json!({"id": "shift", "legend": ["Shift"], "size": 2.25, "finger": 0})];
     for col in 0..10 {
         let l0 = &layout.layers[0][2][col];
         let l1 = &layout.layers[1][2][col];
         let l2 = &layout.layers[2][2][col];
         let l3 = &layout.layers[3][2][col];
-        let l4 = &layout.layers[4][2][col];
         let key_id = QWERTY_KEYS[2][col];
         let finger = if col < 5 { col.min(3) } else { 6 + (col - 5).min(3) };
         bot_row.push(serde_json::json!({
             "id": key_id,
-            "legend": [l0.clone(), l1.clone(), l2.clone(), l3.clone(), l4.clone()],
+            "legend": [l0.clone(), l1.clone(), l2.clone(), l3.clone()],
             "size": 1,
             "finger": finger
         }));
@@ -241,36 +249,34 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
     let mut conversion = serde_json::Map::new();
 
     // シフトキー位置を特定
-    let mut b_key = "d";  // Bのデフォルト（左中指）→ Layer 2
-    let mut a_key = "k";  // Aのデフォルト（右中指）→ Layer 1
-    let mut c_key = "l";  // Cのデフォルト（右薬指）→ Layer 3
-    let mut d_key = "s";  // Dのデフォルト（左薬指）→ Layer 4
+    let mut star_key = "d";    // ★のデフォルト（左中指）→ Layer 2
+    let mut hoshi_key = "k";   // ☆のデフォルト（右中指）→ Layer 1
+    let mut diamond_key = "/"; // ◆のデフォルト（右小指）→ Layer 3
 
     for row in 0..ROWS {
-        for col in 0..COLS {
-            if layout.layers[0][row][col] == "B" {
-                b_key = QWERTY_KEYS[row][col];
+        let cols = cols_for_row(row);
+        for col in 0..cols.min(COLS) {
+            if layout.layers[0][row][col] == "★" {
+                star_key = QWERTY_KEYS[row][col];
             }
-            if layout.layers[0][row][col] == "A" {
-                a_key = QWERTY_KEYS[row][col];
+            if layout.layers[0][row][col] == "☆" {
+                hoshi_key = QWERTY_KEYS[row][col];
             }
-            if layout.layers[0][row][col] == "C" {
-                c_key = QWERTY_KEYS[row][col];
-            }
-            if layout.layers[0][row][col] == "D" {
-                d_key = QWERTY_KEYS[row][col];
+            if layout.layers[0][row][col] == "◆" {
+                diamond_key = QWERTY_KEYS[row][col];
             }
         }
     }
 
     // Layer 0 (no shift)
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[0][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" {
                 continue;
             }
-            let key = QWERTY_KEYS[row][col];
+            let key = if col < COLS { QWERTY_KEYS[row][col] } else { "'" };
             conversion.insert(kana.clone(), serde_json::json!({
                 "keys": [key],
                 "shift": [],
@@ -282,16 +288,17 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
 
     // Layer 1 (☆ shift)
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[1][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
                 continue;
             }
-            let key = QWERTY_KEYS[row][col];
+            let key = if col < COLS { QWERTY_KEYS[row][col] } else { "'" };
             if !conversion.contains_key(kana) {
                 conversion.insert(kana.clone(), serde_json::json!({
                     "keys": [key],
-                    "shift": [a_key],
+                    "shift": [hoshi_key],
                     "type": "sim",
                     "ime": true,
                     "renzsft": false
@@ -302,16 +309,17 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
 
     // Layer 2 (★ shift)
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[2][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
                 continue;
             }
-            let key = QWERTY_KEYS[row][col];
+            let key = if col < COLS { QWERTY_KEYS[row][col] } else { "'" };
             if !conversion.contains_key(kana) {
                 conversion.insert(kana.clone(), serde_json::json!({
                     "keys": [key],
-                    "shift": [b_key],
+                    "shift": [star_key],
                     "type": "sim",
                     "ime": true,
                     "renzsft": false
@@ -320,38 +328,19 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
         }
     }
 
-    // Layer 3 (◎ shift)
+    // Layer 3 (◆ shift)
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[3][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
                 continue;
             }
-            let key = QWERTY_KEYS[row][col];
+            let key = if col < COLS { QWERTY_KEYS[row][col] } else { "'" };
             if !conversion.contains_key(kana) {
                 conversion.insert(kana.clone(), serde_json::json!({
                     "keys": [key],
-                    "shift": [c_key],
-                    "type": "sim",
-                    "ime": true,
-                    "renzsft": false
-                }));
-            }
-        }
-    }
-
-    // Layer 4 (◆ shift)
-    for row in 0..ROWS {
-        for col in 0..COLS {
-            let kana = &layout.layers[4][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
-                continue;
-            }
-            let key = QWERTY_KEYS[row][col];
-            if !conversion.contains_key(kana) {
-                conversion.insert(kana.clone(), serde_json::json!({
-                    "keys": [key],
-                    "shift": [d_key],
+                    "shift": [diamond_key],
                     "type": "sim",
                     "ime": true,
                     "renzsft": false
@@ -362,7 +351,7 @@ pub fn export_analyzer_json(layout: &Layout, path: &Path) {
 
     let json = serde_json::json!({
         "name": "新月配列 v2.0 (Shingetsu Layout)",
-        "remark": "★/☆/◎/◆ 4レイヤー切替方式のかな配列。",
+        "remark": "★/☆/◆ 3シフトレイヤー切替方式のかな配列。",
         "keys": keys,
         "conversion": conversion
     });
@@ -382,105 +371,90 @@ pub fn export_tsv(layout: &Layout, path: &Path, colemak: bool) {
     lines.push(format!("# 新月配列 v2.0 (Shingetsu) {} ANSI用 hazkey ローマ字テーブル", layout_name));
 
     // シフトキー位置を特定
-    let mut b_key = "d";
-    let mut a_key = "k";
-    let mut double_a_key = "l";
-    let mut d_key = "s";
+    let mut star_key = "d";    // ★
+    let mut hoshi_key = "k";   // ☆
+    let mut diamond_key = "/"; // ◆
 
     for row in 0..ROWS {
         for col in 0..COLS {
             if layout.layers[0][row][col] == "★" {
-                b_key = keys[row][col];
+                star_key = keys[row][col];
             }
             if layout.layers[0][row][col] == "☆" {
-                a_key = keys[row][col];
-            }
-            if layout.layers[0][row][col] == "◎" {
-                double_a_key = keys[row][col];
+                hoshi_key = keys[row][col];
             }
             if layout.layers[0][row][col] == "◆" {
-                d_key = keys[row][col];
+                diamond_key = keys[row][col];
             }
         }
     }
 
-    lines.push(format!("# ★={} (Layer 2), ☆={} (Layer 1), ◎={} (Layer 3), ◆={} (Layer 4)",
-        b_key, a_key, double_a_key, d_key));
+    lines.push(format!("# ★={} (Layer 2), ☆={} (Layer 1), ◆={} (Layer 3)",
+        star_key, hoshi_key, diamond_key));
     lines.push("".to_string());
 
     // シフトキー定義
     lines.push("# シフト".to_string());
-    lines.push(format!("{}\t★", b_key));
-    lines.push(format!("{}\t☆", a_key));
-    lines.push(format!("{}\t◎", double_a_key));
-    lines.push(format!("{}\t◆", d_key));
+    lines.push(format!("{}\t★", star_key));
+    lines.push(format!("{}\t☆", hoshi_key));
+    lines.push(format!("{}\t◆", diamond_key));
     lines.push("".to_string());
 
     // No Shift
     lines.push("# No Shift (ベース)".to_string());
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[0][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" {
                 continue;
             }
-            let key = keys[row][col];
+            let key = if col < COLS { keys[row][col] } else { "'" };
             lines.push(format!("{}\t{}", key, kana));
         }
     }
     lines.push("".to_string());
 
     // ☆シフト (Layer 1)
-    lines.push(format!("# ☆シフト ({}前置)", a_key));
+    lines.push(format!("# ☆シフト ({}前置)", hoshi_key));
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[1][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
                 continue;
             }
-            let key = keys[row][col];
+            let key = if col < COLS { keys[row][col] } else { "'" };
             lines.push(format!("☆{}\t{}", key, kana));
         }
     }
     lines.push("".to_string());
 
     // ★シフト (Layer 2)
-    lines.push(format!("# ★シフト ({}前置)", b_key));
+    lines.push(format!("# ★シフト ({}前置)", star_key));
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[2][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
                 continue;
             }
-            let key = keys[row][col];
+            let key = if col < COLS { keys[row][col] } else { "'" };
             lines.push(format!("★{}\t{}", key, kana));
         }
     }
     lines.push("".to_string());
 
-    // ◎シフト (Layer 3)
-    lines.push(format!("# ◎シフト ({}前置)", double_a_key));
+    // ◆シフト (Layer 3)
+    lines.push(format!("# ◆シフト ({}前置)", diamond_key));
     for row in 0..ROWS {
-        for col in 0..COLS {
+        let cols = cols_for_row(row);
+        for col in 0..cols {
             let kana = &layout.layers[3][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
+            if kana == "★" || kana == "☆" || kana == "◆" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
                 continue;
             }
-            let key = keys[row][col];
-            lines.push(format!("◎{}\t{}", key, kana));
-        }
-    }
-    lines.push("".to_string());
-
-    // ◆シフト (Layer 4)
-    lines.push(format!("# ◆シフト ({}前置)", d_key));
-    for row in 0..ROWS {
-        for col in 0..COLS {
-            let kana = &layout.layers[4][row][col];
-            if kana == "A" || kana == "B" || kana == "C" || kana == "D" || kana == "　" || kana == "\0" || kana == "゛" || kana == "゜" {
-                continue;
-            }
-            let key = keys[row][col];
+            let key = if col < COLS { keys[row][col] } else { "'" };
             lines.push(format!("◆{}\t{}", key, kana));
         }
     }
@@ -497,76 +471,24 @@ pub fn export_karabiner(layout: &Layout, path: &Path) {
     let kana_map = kana_to_romaji();
     let mut manipulators = Vec::new();
 
-    // 各キーのmanipulatorを生成
+    // 各キーのmanipulatorを生成 (row 0, 2: 10 cols, row 1: 11 cols)
     for row in 0..ROWS {
-        for col in 0..COLS {
-            let key = QWERTY_KEYS[row][col];
+        let cols = cols_for_row(row);
+        for col in 0..cols {
+            // col 10 is the apostrophe key
+            let key = if col < COLS { QWERTY_KEYS[row][col] } else { "quote" };
             let l0_str = &layout.layers[0][row][col];
             let l1_str = &layout.layers[1][row][col];
             let l2_str = &layout.layers[2][row][col];
+            let l3_str = &layout.layers[3][row][col];
             let l0 = l0_str.chars().next().unwrap_or('　');
             let l1 = l1_str.chars().next().unwrap_or('　');
             let l2 = l2_str.chars().next().unwrap_or('　');
+            let l3 = l3_str.chars().next().unwrap_or('　');
 
-            // ★キーの処理
+            // ★キーの処理 (Layer 2へのシフト)
             if l0_str == "★" {
-                // Layer 1状態でのキー処理（☆シフト中に★を押した場合）
-                if !matches!(l1, '　' | '\0' | '★' | '☆' | '゛' | '゜') {
-                    if let Some(romaji) = kana_map.get(&l1) {
-                        let mut to_keys = romaji_to_keycode(romaji);
-                        to_keys.push(serde_json::json!({"set_variable": {"name": "last_char", "value": 0}}));
-                        to_keys.push(serde_json::json!({"set_variable": {"name": "shift_state", "value": 0}}));
-
-                        manipulators.push(serde_json::json!({
-                            "conditions": [
-                                {"type": "variable_if", "name": "shift_state", "value": 2},
-                                {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
-                                {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
-                            ],
-                            "from": {"key_code": key, "modifiers": {"optional": ["caps_lock"]}},
-                            "to": to_keys,
-                            "type": "basic"
-                        }));
-                    }
-                }
-                // ベース状態: シフトモードに入る
-                manipulators.push(serde_json::json!({
-                    "conditions": [
-                        {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
-                        {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
-                    ],
-                    "from": {"key_code": key, "modifiers": {"optional": ["caps_lock"]}},
-                    "to": [
-                        {"set_variable": {"name": "last_char", "value": 0}},
-                        {"set_variable": {"name": "shift_state", "value": 1}}
-                    ],
-                    "type": "basic"
-                }));
-                continue;
-            }
-
-            // ☆キーの処理
-            if l0_str == "☆" {
-                // Layer 2状態でのキー処理（★シフト中に☆を押した場合）
-                if !matches!(l2, '　' | '\0' | '★' | '☆' | '゛' | '゜') {
-                    if let Some(romaji) = kana_map.get(&l2) {
-                        let mut to_keys = romaji_to_keycode(romaji);
-                        to_keys.push(serde_json::json!({"set_variable": {"name": "last_char", "value": 0}}));
-                        to_keys.push(serde_json::json!({"set_variable": {"name": "shift_state", "value": 0}}));
-
-                        manipulators.push(serde_json::json!({
-                            "conditions": [
-                                {"type": "variable_if", "name": "shift_state", "value": 1},
-                                {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
-                                {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
-                            ],
-                            "from": {"key_code": key, "modifiers": {"optional": ["caps_lock"]}},
-                            "to": to_keys,
-                            "type": "basic"
-                        }));
-                    }
-                }
-                // ベース状態: シフトモードに入る
+                // ベース状態: シフトモードに入る (shift_state = 2 for ★)
                 manipulators.push(serde_json::json!({
                     "conditions": [
                         {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
@@ -582,7 +504,63 @@ pub fn export_karabiner(layout: &Layout, path: &Path) {
                 continue;
             }
 
+            // ☆キーの処理 (Layer 1へのシフト)
+            if l0_str == "☆" {
+                // ベース状態: シフトモードに入る (shift_state = 1 for ☆)
+                manipulators.push(serde_json::json!({
+                    "conditions": [
+                        {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
+                        {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
+                    ],
+                    "from": {"key_code": key, "modifiers": {"optional": ["caps_lock"]}},
+                    "to": [
+                        {"set_variable": {"name": "last_char", "value": 0}},
+                        {"set_variable": {"name": "shift_state", "value": 1}}
+                    ],
+                    "type": "basic"
+                }));
+                continue;
+            }
+
+            // ◆キーの処理 (Layer 3へのシフト)
+            if l0_str == "◆" {
+                // ベース状態: シフトモードに入る (shift_state = 3 for ◆)
+                manipulators.push(serde_json::json!({
+                    "conditions": [
+                        {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
+                        {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
+                    ],
+                    "from": {"key_code": key, "modifiers": {"optional": ["caps_lock"]}},
+                    "to": [
+                        {"set_variable": {"name": "last_char", "value": 0}},
+                        {"set_variable": {"name": "shift_state", "value": 3}}
+                    ],
+                    "type": "basic"
+                }));
+                continue;
+            }
+
             // 通常キーの処理
+
+            // Layer 3 (◆シフト状態)
+            if !matches!(l3, '　' | '\0' | '゛' | '゜') {
+                if let Some(romaji) = kana_map.get(&l3) {
+                    let mut to_keys = romaji_to_keycode(romaji);
+                    to_keys.push(serde_json::json!({"set_variable": {"name": "last_char", "value": 0}}));
+                    to_keys.push(serde_json::json!({"set_variable": {"name": "shift_state", "value": 0}}));
+
+                    manipulators.push(serde_json::json!({
+                        "conditions": [
+                            {"type": "variable_if", "name": "shift_state", "value": 3},
+                            {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
+                            {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
+                        ],
+                        "from": {"key_code": key, "modifiers": {"optional": ["caps_lock"]}},
+                        "to": to_keys,
+                        "type": "basic"
+                    }));
+                }
+            }
 
             // Layer 2 (★シフト状態)
             if !matches!(l2, '　' | '\0' | '゛' | '゜') {
@@ -593,7 +571,7 @@ pub fn export_karabiner(layout: &Layout, path: &Path) {
 
                     manipulators.push(serde_json::json!({
                         "conditions": [
-                            {"type": "variable_if", "name": "shift_state", "value": 1},
+                            {"type": "variable_if", "name": "shift_state", "value": 2},
                             {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
                             {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
                         ],
@@ -613,7 +591,7 @@ pub fn export_karabiner(layout: &Layout, path: &Path) {
 
                     manipulators.push(serde_json::json!({
                         "conditions": [
-                            {"type": "variable_if", "name": "shift_state", "value": 2},
+                            {"type": "variable_if", "name": "shift_state", "value": 1},
                             {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
                             {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
                         ],
@@ -645,7 +623,7 @@ pub fn export_karabiner(layout: &Layout, path: &Path) {
     }
 
     let json = serde_json::json!({
-        "description": "新月配列 (Shingetsu Layout) ☆/★レイヤー切替方式",
+        "description": "新月配列 v2.0 (Shingetsu Layout) ☆/★/◆レイヤー切替方式",
         "manipulators": manipulators
     });
 

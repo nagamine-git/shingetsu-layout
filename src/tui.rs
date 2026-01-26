@@ -383,8 +383,8 @@ fn render_multi_run_panel(f: &mut Frame, area: Rect, run_id: usize, fitness: f64
 
     let mut lines: Vec<Line> = vec![];
 
-    // 5層を圧縮表示（各レイヤー1行）
-    let layer_names = ["L0", "L1(A)", "L2(B)", "L3(C)", "L4(D)"];
+    // 4層を圧縮表示（各レイヤー1行）
+    let layer_names = ["L0", "L1(☆)", "L2(★)", "L3(◆)"];
     for (layer_idx, layer_name) in layer_names.iter().enumerate() {
         // 中段のみ表示（圧縮のため）
         let row_str: String = layout.layers[layer_idx][1]
@@ -433,13 +433,12 @@ fn render_keyboard(f: &mut Frame, area: Rect, state: &TuiState) {
 
     lines.push(Line::from(""));
 
-    // 5層すべてを表示
+    // 4層すべてを表示
     let layer_names = [
         "Layer 0 (無シフト)",
-        "Layer 1 (A)",
-        "Layer 2 (B)",
-        "Layer 3 (C)",
-        "Layer 4 (D)",
+        "Layer 1 (☆)",
+        "Layer 2 (★)",
+        "Layer 3 (◆)",
     ];
 
     for (layer_idx, layer_name) in layer_names.iter().enumerate() {
@@ -472,8 +471,8 @@ fn render_keyboard(f: &mut Frame, area: Rect, state: &TuiState) {
 
 /// Colemak一致詳細を計算（評価関数と同じロジック）
 /// 戻り値: (perfect, partial, total, layer別perfect配列)
-fn calc_colemak_match_detail(layers: &Vec<Vec<Vec<String>>>) -> (usize, usize, usize, [usize; 5]) {
-    use crate::layout::{romaji_phonemes, COLEMAK_POSITIONS};
+fn calc_colemak_match_detail(layers: &Vec<Vec<Vec<String>>>) -> (usize, usize, usize, [usize; 4]) {
+    use crate::layout::{romaji_phonemes, COLEMAK_POSITIONS, cols_for_row};
     use std::collections::HashMap;
 
     // COLEMAK_POSITIONSから音素→位置のマップを作成
@@ -485,12 +484,13 @@ fn calc_colemak_match_detail(layers: &Vec<Vec<Vec<String>>>) -> (usize, usize, u
     let mut perfect = 0; // 完全一致（両音素とも位置一致）
     let mut partial = 0; // 部分一致（片方のみ一致または行/手一致）
     let mut total = 0;
-    let mut layer_perfect = [0usize; 5]; // 各レイヤーのperfect数
+    let mut layer_perfect = [0usize; 4]; // 各レイヤーのperfect数
 
-    // 全5レイヤーを評価
-    for layer in 0..5.min(layers.len()) {
+    // 全4レイヤーを評価
+    for layer in 0..4.min(layers.len()) {
         for row in 0..3 {
-            for col in 0..10 {
+            let cols = cols_for_row(row);
+            for col in 0..cols {
                 let s = &layers[layer][row][col];
                 let c = match s.chars().next() {
                     Some(ch) => ch,
@@ -586,10 +586,10 @@ fn calc_colemak_match_detail(layers: &Vec<Vec<Vec<String>>>) -> (usize, usize, u
 }
 
 /// 月配列一致詳細を計算（ヘルパー関数）
-/// 戻り値: 各レイヤーの(一致数, 総数)の配列 [5]
+/// 戻り値: 各レイヤーの(一致数, 総数)の配列 [4]
 fn calc_tsuki_match_detail(
     layers: &Vec<Vec<Vec<String>>>,
-) -> [(usize, usize); 5] {
+) -> [(usize, usize); 4] {
     // 月配列: Layer 0 = 表面, Layer 1 = 裏面
     let tsuki_layers = [
         [
@@ -604,14 +604,15 @@ fn calc_tsuki_match_detail(
         ],
     ];
 
-    let mut result = [(0usize, 0usize); 5];
+    let mut result = [(0usize, 0usize); 4];
 
-    for ga_layer in 0..5.min(layers.len()) {
+    for ga_layer in 0..4.min(layers.len()) {
         // GA Layer 0 → 月 Layer 0（表面）
-        // GA Layer 1,2,3,4 → 月 Layer 1（裏面）
+        // GA Layer 1,2,3 → 月 Layer 1（裏面）
         let tsuki_layer = if ga_layer == 0 { 0 } else { 1 };
 
         for row in 0..3 {
+            // 月配列は10列のみなので、比較は10列まで
             for col in 0..10 {
                 let s = &layers[ga_layer][row][col];
                 let kana = match s.chars().next() {
@@ -715,9 +716,9 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
             colemak_total - colemak_perfect - colemak_partial
         )));
         left_lines.push(Line::from(format!(
-            "  L0:{} L1:{} L2:{} L3:{} L4:{}",
+            "  L0:{} L1:{} L2:{} L3:{}",
             colemak_by_layer[0], colemak_by_layer[1], colemak_by_layer[2],
-            colemak_by_layer[3], colemak_by_layer[4]
+            colemak_by_layer[3]
         )));
 
         let tsuki_detail = calc_tsuki_match_detail(&layers);
@@ -728,15 +729,11 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
             s.tsuki_similarity, total_match, total_all
         )));
         left_lines.push(Line::from(format!(
-            "  L0:{}/{} L1:{}/{} L2:{}/{}",
+            "  L0:{}/{} L1:{}/{} L2:{}/{} L3:{}/{}",
             tsuki_detail[0].0, tsuki_detail[0].1,
             tsuki_detail[1].0, tsuki_detail[1].1,
-            tsuki_detail[2].0, tsuki_detail[2].1
-        )));
-        left_lines.push(Line::from(format!(
-            "  L3:{}/{} L4:{}/{}",
-            tsuki_detail[3].0, tsuki_detail[3].1,
-            tsuki_detail[4].0, tsuki_detail[4].1
+            tsuki_detail[2].0, tsuki_detail[2].1,
+            tsuki_detail[3].0, tsuki_detail[3].1
         )));
         
         left_lines.push(Line::from(""));
@@ -888,8 +885,8 @@ fn render_debug_panel(f: &mut Frame, area: Rect, state: &TuiState) {
         }
 
         right_lines.push(Line::from("L0: 上段外側・下段外側"));
-        right_lines.push(Line::from("L1: A(col7)上下Ver+27,Out+9"));
-        right_lines.push(Line::from("L2: B(col2)上下Ver+27,Out+9"));
+        right_lines.push(Line::from("L1: ☆(col7)上下Ver+27,Out+9"));
+        right_lines.push(Line::from("L2: ★(col2)上下Ver+27,Out+9"));
         
         // ========== 中央カラム: キーごと採点 ==========
         center_lines.push(Line::from(Span::styled(
@@ -1132,7 +1129,7 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
             .fg(Color::Green)
             .add_modifier(Modifier::BOLD),
     )));
-    // Colemak一致率の詳細計算（全5レイヤー）
+    // Colemak一致率の詳細計算（全4レイヤー）
     let (colemak_perfect, colemak_partial, colemak_total, colemak_by_layer) = calc_colemak_match_detail(&layout.layers);
     lines.push(Line::from(format!(
         "Colemak:    {:.1}% (◎{} ○{} ×{})",
@@ -1140,12 +1137,12 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
         colemak_total - colemak_perfect - colemak_partial
     )));
     lines.push(Line::from(format!(
-        "  L0:{} L1:{} L2:{} L3:{} L4:{}",
+        "  L0:{} L1:{} L2:{} L3:{}",
         colemak_by_layer[0], colemak_by_layer[1], colemak_by_layer[2],
-        colemak_by_layer[3], colemak_by_layer[4]
+        colemak_by_layer[3]
     )));
 
-    // 月配列一致率の詳細計算（全5レイヤー）
+    // 月配列一致率の詳細計算（全4レイヤー）
     let tsuki_detail = calc_tsuki_match_detail(&layout.layers);
     let tsuki_match: usize = tsuki_detail.iter().map(|(m, _)| m).sum();
     let tsuki_total: usize = tsuki_detail.iter().map(|(_, t)| t).sum();
@@ -1154,12 +1151,11 @@ fn render_scores_and_weights(f: &mut Frame, area: Rect, state: &TuiState) {
         s.tsuki_similarity, tsuki_match, tsuki_total - tsuki_match
     )));
     lines.push(Line::from(format!(
-        "  L0:{}/{} L1:{}/{} L2:{}/{} L3:{}/{} L4:{}/{}",
+        "  L0:{}/{} L1:{}/{} L2:{}/{} L3:{}/{}",
         tsuki_detail[0].0, tsuki_detail[0].1,
         tsuki_detail[1].0, tsuki_detail[1].1,
         tsuki_detail[2].0, tsuki_detail[2].1,
-        tsuki_detail[3].0, tsuki_detail[3].1,
-        tsuki_detail[4].0, tsuki_detail[4].1
+        tsuki_detail[3].0, tsuki_detail[3].1
     )));
     // 位置コストはCore metricsに移動
 
