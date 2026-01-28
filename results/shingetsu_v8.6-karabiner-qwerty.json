@@ -3153,12 +3153,6 @@
       },
       "to": [
         {
-          "key_code": "w"
-        },
-        {
-          "key_code": "a"
-        },
-        {
           "set_variable": {
             "name": "last_char",
             "value": 0
@@ -3167,7 +3161,7 @@
         {
           "set_variable": {
             "name": "shift_state",
-            "value": 0
+            "value": 4
           }
         }
       ]
@@ -3216,6 +3210,60 @@
           "set_variable": {
             "name": "shift_state",
             "value": 3
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 4
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "l",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "w"
+        },
+        {
+          "key_code": "a"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        },
+        {
+          "set_variable": {
+            "name": "shift_state",
+            "value": 0
           }
         }
       ]
@@ -5408,6 +5456,177 @@
         },
         {
           "key_code": "u"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        },
+        {
+          "set_variable": {
+            "name": "shift_state",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 4
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "h",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "m"
+        },
+        {
+          "key_code": "y"
+        },
+        {
+          "key_code": "a"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        },
+        {
+          "set_variable": {
+            "name": "shift_state",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 4
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "j",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "m"
+        },
+        {
+          "key_code": "y"
+        },
+        {
+          "key_code": "u"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        },
+        {
+          "set_variable": {
+            "name": "shift_state",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 4
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "k",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "m"
+        },
+        {
+          "key_code": "y"
+        },
+        {
+          "key_code": "o"
         },
         {
           "set_variable": {
