@@ -2156,6 +2156,11 @@
       "type": "basic",
       "conditions": [
         {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 0
+        },
+        {
           "input_sources": [
             {
               "language": "ja"
@@ -3069,6 +3074,11 @@
       "type": "basic",
       "conditions": [
         {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 0
+        },
+        {
           "input_sources": [
             {
               "language": "ja"
@@ -3114,7 +3124,7 @@
         {
           "type": "variable_if",
           "name": "shift_state",
-          "value": 1
+          "value": 2
         },
         {
           "input_sources": [
@@ -3168,7 +3178,7 @@
         {
           "type": "variable_if",
           "name": "shift_state",
-          "value": 2
+          "value": 1
         },
         {
           "input_sources": [
@@ -3199,7 +3209,7 @@
         {
           "set_variable": {
             "name": "shift_state",
-            "value": 3
+            "value": 4
           }
         }
       ]

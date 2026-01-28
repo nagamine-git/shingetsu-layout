@@ -361,10 +361,10 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
                     {"set_variable": {"name": "shift_state", "value": 0}}
                 ]
             })
-            # 通常時: シフト状態=1 (★)に設定
+            # 通常時(shift_state=0): シフト状態=1 (★)に設定
             manipulators.append({
                 "type": "basic",
-                "conditions": ja_conditions,
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 0}] + ja_conditions,
                 "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
                 "to": [
                     {"set_variable": {"name": "last_char", "value": 0}},
@@ -395,10 +395,10 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
                     {"set_variable": {"name": "shift_state", "value": 0}}
                 ]
             })
-            # 通常時: シフト状態=2 (☆)に設定
+            # 通常時(shift_state=0): シフト状態=2 (☆)に設定
             manipulators.append({
                 "type": "basic",
-                "conditions": ja_conditions,
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 0}] + ja_conditions,
                 "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
                 "to": [
                     {"set_variable": {"name": "last_char", "value": 0}},
@@ -409,22 +409,22 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
 
         # ゛キー (l)
         if qwerty_key == 'l':
-            # ★+゛: わ を出力
+            # ☆+l: わ を出力 (analyzer: わ = keys=['l'], shift=['k'])
             manipulators.append({
                 "type": "basic",
-                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 2}] + ja_conditions,
                 "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
                 "to": romaji_to_keycodes("wa") + [
                     {"set_variable": {"name": "last_char", "value": 0}},
                     {"set_variable": {"name": "shift_state", "value": 0}}
                 ]
             })
-            # ☆+゛: 拗音シフト状態(shift_state=3)に移行
+            # ★+゛: 拗音シフト状態(shift_state=4)に移行 (みゃ/みゅ/みょ用)
             manipulators.append({
                 "type": "basic",
-                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 2}] + ja_conditions,
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
                 "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
-                "to": [{"set_variable": {"name": "shift_state", "value": 3}}]
+                "to": [{"set_variable": {"name": "shift_state", "value": 4}}]
             })
             # 通常時(shift_state=0): 何も出力しない (後置濁点用のルールは各文字の後に追加)
             manipulators.append({
