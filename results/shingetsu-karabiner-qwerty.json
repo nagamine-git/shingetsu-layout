@@ -2226,7 +2226,7 @@
         }
       ],
       "from": {
-        "key_code": "f",
+        "key_code": "semicolon",
         "modifiers": {
           "optional": [
             "caps_lock"
@@ -3290,7 +3290,7 @@
         }
       ],
       "from": {
-        "key_code": "semicolon",
+        "key_code": "f",
         "modifiers": {
           "optional": [
             "caps_lock"
