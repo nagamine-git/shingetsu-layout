@@ -429,14 +429,17 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
                     {"set_variable": {"name": "shift_state", "value": 3}}
                 ]
             })
-            # 通常時(shift_state=0): 何も出力しない (後置濁点用のルールは各文字の後に追加)
+            # 通常時(shift_state=0, last_char=0): 何も出力しない
+            # last_char!=0 の場合は濁音ルールにマッチさせるためここではスキップ
             manipulators.append({
                 "type": "basic",
-                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 0}] + ja_conditions,
+                "conditions": [
+                    {"type": "variable_if", "name": "shift_state", "value": 0},
+                    {"type": "variable_if", "name": "last_char", "value": 0}
+                ] + ja_conditions,
                 "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
                 "to": [
-                    {"key_code": "vk_none"},
-                    {"set_variable": {"name": "last_char", "value": 0}}
+                    {"key_code": "vk_none"}
                 ]
             })
             continue

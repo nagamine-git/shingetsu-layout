@@ -3229,6 +3229,11 @@
           "value": 0
         },
         {
+          "type": "variable_if",
+          "name": "last_char",
+          "value": 0
+        },
+        {
           "input_sources": [
             {
               "language": "ja"
@@ -3256,12 +3261,6 @@
       "to": [
         {
           "key_code": "vk_none"
-        },
-        {
-          "set_variable": {
-            "name": "last_char",
-            "value": 0
-          }
         }
       ]
     },
