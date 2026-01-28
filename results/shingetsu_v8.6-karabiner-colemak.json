@@ -3153,12 +3153,6 @@
       },
       "to": [
         {
-          "key_code": "w"
-        },
-        {
-          "key_code": "a"
-        },
-        {
           "set_variable": {
             "name": "last_char",
             "value": 0
@@ -3167,7 +3161,7 @@
         {
           "set_variable": {
             "name": "shift_state",
-            "value": 0
+            "value": 3
           }
         }
       ]
@@ -3178,7 +3172,7 @@
         {
           "type": "variable_if",
           "name": "shift_state",
-          "value": 1
+          "value": 3
         },
         {
           "input_sources": [
@@ -3207,9 +3201,21 @@
       },
       "to": [
         {
+          "key_code": "w"
+        },
+        {
+          "key_code": "a"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        },
+        {
           "set_variable": {
             "name": "shift_state",
-            "value": 4
+            "value": 0
           }
         }
       ]
