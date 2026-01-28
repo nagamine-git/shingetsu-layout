@@ -1,1443 +1,248 @@
 {
-  "conversion": {
-    "、": {
-      "ime": true,
-      "keys": [
-        ","
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "。": {
-      "ime": true,
-      "keys": [
-        "."
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ぁ": {
-      "ime": true,
-      "keys": [
-        "/"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "あ": {
-      "ime": true,
-      "keys": [
-        ";"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぃ": {
-      "ime": true,
-      "keys": [
-        "/"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "い": {
-      "ime": true,
-      "keys": [
-        ";"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "う": {
-      "ime": true,
-      "keys": [
-        "k"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ぇ": {
-      "ime": true,
-      "keys": [
-        "p"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "え": {
-      "ime": true,
-      "keys": [
-        "k"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぉ": {
-      "ime": true,
-      "keys": [
-        "/"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "お": {
-      "ime": true,
-      "keys": [
-        ";"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "か": {
-      "ime": true,
-      "keys": [
-        "h"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "が": {
-      "ime": true,
-      "keys": [
-        "r"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "き": {
-      "ime": true,
-      "keys": [
-        "m"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ぎ": {
-      "ime": true,
-      "keys": [
-        "s"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "く": {
-      "ime": true,
-      "keys": [
-        "u"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ぐ": {
-      "ime": true,
-      "keys": [
-        "t"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "け": {
-      "ime": true,
-      "keys": [
-        "x"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "げ": {
-      "ime": true,
-      "keys": [
-        "t"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "こ": {
-      "ime": true,
-      "keys": [
-        "w"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ご": {
-      "ime": true,
-      "keys": [
-        "u"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "さ": {
-      "ime": true,
-      "keys": [
-        "d"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ざ": {
-      "ime": true,
-      "keys": [
-        "z"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "し": {
-      "ime": true,
-      "keys": [
-        "s"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "じ": {
-      "ime": true,
-      "keys": [
-        "l"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "す": {
-      "ime": true,
-      "keys": [
-        "i"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ず": {
-      "ime": true,
-      "keys": [
-        "z"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "せ": {
-      "ime": true,
-      "keys": [
-        "c"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぜ": {
-      "ime": true,
-      "keys": [
-        "n"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "そ": {
-      "ime": true,
-      "keys": [
-        "a"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぞ": {
-      "ime": true,
-      "keys": [
-        "z"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "た": {
-      "ime": true,
-      "keys": [
-        "g"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "だ": {
-      "ime": true,
-      "keys": [
-        "a"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ち": {
-      "ime": true,
-      "keys": [
-        "h"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぢ": {
-      "ime": true,
-      "keys": [
-        "a"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "っ": {
-      "ime": true,
-      "keys": [
-        "n"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "つ": {
-      "ime": true,
-      "keys": [
-        "y"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "づ": {
-      "ime": true,
-      "keys": [
-        "o"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "て": {
-      "ime": true,
-      "keys": [
-        "f"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "で": {
-      "ime": true,
-      "keys": [
-        "o"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "と": {
-      "ime": true,
-      "keys": [
-        "e"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ど": {
-      "ime": true,
-      "keys": [
-        "j"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "な": {
-      "ime": true,
-      "keys": [
-        "f"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "に": {
-      "ime": true,
-      "keys": [
-        "c"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ぬ": {
-      "ime": true,
-      "keys": [
-        "y"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ね": {
-      "ime": true,
-      "keys": [
-        ","
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "の": {
-      "ime": true,
-      "keys": [
-        "s"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "は": {
-      "ime": true,
-      "keys": [
-        "f"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ば": {
-      "ime": true,
-      "keys": [
-        "b"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ぱ": {
-      "ime": true,
-      "keys": [
-        "q"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ひ": {
-      "ime": true,
-      "keys": [
-        "w"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "び": {
-      "ime": true,
-      "keys": [
-        "m"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ぴ": {
-      "ime": true,
-      "keys": [
-        "p"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ふ": {
-      "ime": true,
-      "keys": [
-        "r"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぶ": {
-      "ime": true,
-      "keys": [
-        "m"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぷ": {
-      "ime": true,
-      "keys": [
-        "u"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "へ": {
-      "ime": true,
-      "keys": [
-        "g"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "べ": {
-      "ime": true,
-      "keys": [
-        "v"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ぺ": {
-      "ime": true,
-      "keys": [
-        "q"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ほ": {
-      "ime": true,
-      "keys": [
-        "e"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ぼ": {
-      "ime": true,
-      "keys": [
-        "b"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ぽ": {
-      "ime": true,
-      "keys": [
-        "y"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ま": {
-      "ime": true,
-      "keys": [
-        "v"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "み": {
-      "ime": true,
-      "keys": [
-        "i"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "む": {
-      "ime": true,
-      "keys": [
-        "n"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "め": {
-      "ime": true,
-      "keys": [
-        "t"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "も": {
-      "ime": true,
-      "keys": [
-        "w"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ゃ": {
-      "ime": true,
-      "keys": [
-        "b"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "や": {
-      "ime": true,
-      "keys": [
-        "o"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ゅ": {
-      "ime": true,
-      "keys": [
-        "v"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ゆ": {
-      "ime": true,
-      "keys": [
-        "p"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ょ": {
-      "ime": true,
-      "keys": [
-        "x"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "よ": {
-      "ime": true,
-      "keys": [
-        "g"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "ら": {
-      "ime": true,
-      "keys": [
-        "d"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "り": {
-      "ime": true,
-      "keys": [
-        "l"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "る": {
-      "ime": true,
-      "keys": [
-        "j"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "れ": {
-      "ime": true,
-      "keys": [
-        "q"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ろ": {
-      "ime": true,
-      "keys": [
-        "h"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "わ": {
-      "ime": true,
-      "keys": [
-        "r"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "を": {
-      "ime": true,
-      "keys": [
-        "l"
-      ],
-      "shift": [],
-      "type": "sim"
-    },
-    "ん": {
-      "ime": true,
-      "keys": [
-        "j"
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ゔ": {
-      "ime": true,
-      "keys": [
-        "x"
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "・": {
-      "ime": true,
-      "keys": [
-        "."
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    },
-    "ー": {
-      "ime": true,
-      "keys": [
-        "."
-      ],
-      "renzsft": false,
-      "shift": [
-        "d"
-      ],
-      "type": "sim"
-    },
-    "；": {
-      "ime": true,
-      "keys": [
-        ","
-      ],
-      "renzsft": false,
-      "shift": [
-        "k"
-      ],
-      "type": "sim"
-    }
-  },
+  "name": "新月配列 v8.6 (ANSI)",
+  "remark": "前置シフト(★/☆) + 後置シフト(゛゜小)方式。Spaceキーでー(シフトで！)",
   "keys": [
     [
-      {
-        "finger": 0,
-        "id": "`",
-        "legend": [
-          "`",
-          "~"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 0,
-        "id": "1",
-        "legend": [
-          "1",
-          "!"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 1,
-        "id": "2",
-        "legend": [
-          "2",
-          "@"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 2,
-        "id": "3",
-        "legend": [
-          "3",
-          "#"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "id": "4",
-        "legend": [
-          "4",
-          "$"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "id": "5",
-        "legend": [
-          "5",
-          "%"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 6,
-        "id": "6",
-        "legend": [
-          "6",
-          "^"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 6,
-        "id": "7",
-        "legend": [
-          "7",
-          "&"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 7,
-        "id": "8",
-        "legend": [
-          "8",
-          "*"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 8,
-        "id": "9",
-        "legend": [
-          "9",
-          "("
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "0",
-        "legend": [
-          "0",
-          ")"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "-",
-        "legend": [
-          "-",
-          "_"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "=",
-        "legend": [
-          "=",
-          "+"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "bs",
-        "legend": [
-          "BS"
-        ],
-        "size": 2
-      }
+      {"id": "zkhk"  , "legend": ["全角"]      , "size": 1,    "finger": 0},
+      {"id": "1"     , "legend": ["1"]         , "size": 1,    "finger": 0},
+      {"id": "2"     , "legend": ["2"]         , "size": 1,    "finger": 1},
+      {"id": "3"     , "legend": ["3"]         , "size": 1,    "finger": 2},
+      {"id": "4"     , "legend": ["4"]         , "size": 1,    "finger": 3},
+      {"id": "5"     , "legend": ["5"]         , "size": 1,    "finger": 3},
+      {"id": "6"     , "legend": ["6"]         , "size": 1,    "finger": 6},
+      {"id": "7"     , "legend": ["7"]         , "size": 1,    "finger": 6},
+      {"id": "8"     , "legend": ["8"]         , "size": 1,    "finger": 7},
+      {"id": "9"     , "legend": ["9"]         , "size": 1,    "finger": 8},
+      {"id": "0"     , "legend": ["0"]         , "size": 1,    "finger": 9},
+      {"id": "-"     , "legend": ["ー"]        , "size": 1,    "finger": 9},
+      {"id": "="     , "legend": ["＝"]        , "size": 1,    "finger": 9},
+      {"id": "bs"    , "legend": ["BS"]        , "size": 2,    "finger": 9}
     ],
     [
-      {
-        "finger": 0,
-        "id": "tab",
-        "legend": [
-          "Tab"
-        ],
-        "size": 1.5
-      },
-      {
-        "finger": 0,
-        "id": "q",
-        "legend": [
-          "れ",
-          "ぱ",
-          "ぺ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 1,
-        "id": "w",
-        "legend": [
-          "も",
-          "こ",
-          "ひ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 2,
-        "id": "e",
-        "legend": [
-          "と",
-          "ほ",
-          "　"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "id": "r",
-        "legend": [
-          "が",
-          "ふ",
-          "わ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "id": "t",
-        "legend": [
-          "ぐ",
-          "げ",
-          "め"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 6,
-        "id": "y",
-        "legend": [
-          "つ",
-          "ぽ",
-          "ぬ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 7,
-        "id": "u",
-        "legend": [
-          "く",
-          "ぷ",
-          "ご"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 8,
-        "id": "i",
-        "legend": [
-          "す",
-          "　",
-          "み"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "o",
-        "legend": [
-          "で",
-          "づ",
-          "や"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "p",
-        "legend": [
-          "ゆ",
-          "ぇ",
-          "ぴ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "[",
-        "legend": [
-          "「",
-          "「",
-          "「"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "]",
-        "legend": [
-          "」",
-          "」",
-          "」"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "\\",
-        "legend": [
-          "\\",
-          "|"
-        ],
-        "size": 1.5
-      }
+      {"id": "tab"   , "legend": ["Tab"]       , "size": 1.5,  "finger": 0},
+      {"id": "q"     , "legend": ["そ", "ゆ", "ぴょ"]     , "size": 1,    "finger": 0},
+      {"id": "w"     , "legend": ["こ", "ひ", "びょ"]     , "size": 1,    "finger": 1},
+      {"id": "e"     , "legend": ["し", "ほ", "じょ"]     , "size": 1,    "finger": 2},
+      {"id": "r"     , "legend": ["て", "ふ", "ぎょ"]     , "size": 1,    "finger": 3},
+      {"id": "t"     , "legend": ["ょ", "め"]             , "size": 1,    "finger": 3},
+      {"id": "y"     , "legend": ["つ", "ぬ"]             , "size": 1,    "finger": 6},
+      {"id": "u"     , "legend": ["ん", "え"]             , "size": 1,    "finger": 6},
+      {"id": "i"     , "legend": ["い", "み"]             , "size": 1,    "finger": 7},
+      {"id": "o"     , "legend": ["の", "や"]             , "size": 1,    "finger": 8},
+      {"id": "p"     , "legend": ["り"]                   , "size": 1,    "finger": 9},
+      {"id": "["     , "legend": ["「"]                   , "size": 1,    "finger": 9},
+      {"id": "]"     , "legend": ["」"]                   , "size": 1,    "finger": 9},
+      {"id": "\\"    , "legend": ["\\"]        , "size": 1.5, "finger": 9}
     ],
     [
-      {
-        "finger": 0,
-        "id": "caps",
-        "legend": [
-          "Caps Lock"
-        ],
-        "size": 1.75
-      },
-      {
-        "finger": 0,
-        "home": true,
-        "id": "a",
-        "legend": [
-          "だ",
-          "そ",
-          "ぢ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 1,
-        "id": "s",
-        "legend": [
-          "の",
-          "し",
-          "ぎ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 2,
-        "id": "d",
-        "legend": [
-          "★",
-          "さ",
-          "ら"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "home": true,
-        "id": "f",
-        "legend": [
-          "て",
-          "は",
-          "な"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "home": true,
-        "id": "g",
-        "legend": [
-          "た",
-          "へ",
-          "よ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 6,
-        "home": true,
-        "id": "h",
-        "legend": [
-          "か",
-          "ち",
-          "ろ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 7,
-        "home": true,
-        "id": "j",
-        "legend": [
-          "る",
-          "ん",
-          "ど"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 8,
-        "id": "k",
-        "legend": [
-          "☆",
-          "え",
-          "う"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "l",
-        "legend": [
-          "を",
-          "じ",
-          "り"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "home": true,
-        "id": ";",
-        "legend": [
-          "い",
-          "あ",
-          "お"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "'",
-        "legend": [
-          "'",
-          "'",
-          "'"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "enter",
-        "legend": [
-          "Enter"
-        ],
-        "size": 2.25
-      }
+      {"id": "caps"  , "legend": ["Caps Lock"] , "size": 1.75, "finger": 0},
+      {"id": "a"     , "legend": ["は", "あ", "ぴゅ"]     , "size": 1,    "finger": 0, "home": true},
+      {"id": "s"     , "legend": ["か", "を", "びゅ"]     , "size": 1,    "finger": 1, "home": true},
+      {"id": "d"     , "legend": ["★", "ら", "じゅ"]     , "size": 1,    "finger": 2, "home": true},
+      {"id": "f"     , "legend": ["と", "ち", "ぎゅ"]     , "size": 1,    "finger": 3, "home": true},
+      {"id": "g"     , "legend": ["た", "よ", "でゅ"]     , "size": 1,    "finger": 3},
+      {"id": "h"     , "legend": ["く", "ま", "みゃ"]     , "size": 1,    "finger": 6},
+      {"id": "j"     , "legend": ["う", "お", "みゅ"]     , "size": 1,    "finger": 6, "home": true},
+      {"id": "k"     , "legend": ["☆", "も", "みょ"]     , "size": 1,    "finger": 7, "home": true},
+      {"id": "l"     , "legend": ["゛゜小", "わ"]         , "size": 1,    "finger": 8, "home": true},
+      {"id": ";"     , "legend": ["き", "れ"]             , "size": 1,    "finger": 9, "home": true},
+      {"id": "'"     , "legend": ["'"]                    , "size": 1,    "finger": 9},
+      {"id": "enter" , "legend": ["Enter"]     , "size": 2.25, "finger": 9}
     ],
     [
-      {
-        "finger": 0,
-        "id": "shift",
-        "legend": [
-          "Shift"
-        ],
-        "size": 2.25
-      },
-      {
-        "finger": 0,
-        "id": "z",
-        "legend": [
-          "ず",
-          "ぞ",
-          "ざ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 1,
-        "id": "x",
-        "legend": [
-          "け",
-          "ょ",
-          "ゔ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 2,
-        "id": "c",
-        "legend": [
-          "に",
-          "せ",
-          "　"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "id": "v",
-        "legend": [
-          "ま",
-          "ゅ",
-          "べ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 3,
-        "id": "b",
-        "legend": [
-          "ば",
-          "ゃ",
-          "ぼ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 6,
-        "id": "n",
-        "legend": [
-          "っ",
-          "む",
-          "ぜ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 7,
-        "id": "m",
-        "legend": [
-          "き",
-          "ぶ",
-          "び"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 8,
-        "id": ",",
-        "legend": [
-          "、",
-          "；",
-          "ね"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": ".",
-        "legend": [
-          "。",
-          "・",
-          "ー"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "/",
-        "legend": [
-          "ぁ",
-          "ぃ",
-          "ぉ"
-        ],
-        "size": 1
-      },
-      {
-        "finger": 9,
-        "id": "rshift",
-        "legend": [
-          "Shift"
-        ],
-        "size": 2.75
-      }
+      {"id": "shift" , "legend": ["Shift"]     , "size": 2.25, "finger": 0},
+      {"id": "z"     , "legend": ["す", "ね", "ぴゃ"]     , "size": 1,    "finger": 0},
+      {"id": "x"     , "legend": ["け", "へ", "びゃ"]     , "size": 1,    "finger": 1},
+      {"id": "c"     , "legend": ["に", "せ", "じゃ"]     , "size": 1,    "finger": 2},
+      {"id": "v"     , "legend": ["な", "ゅ", "ぎゃ"]     , "size": 1,    "finger": 3},
+      {"id": "b"     , "legend": ["さ", "ゃ", "ぢゃ"]     , "size": 1,    "finger": 3},
+      {"id": "n"     , "legend": ["っ", "む"]             , "size": 1,    "finger": 6},
+      {"id": "m"     , "legend": ["る", "ろ"]             , "size": 1,    "finger": 6},
+      {"id": ","     , "legend": ["、"]                   , "size": 1,    "finger": 7},
+      {"id": "."     , "legend": ["。"]                   , "size": 1,    "finger": 8},
+      {"id": "/"     , "legend": ["・"]                   , "size": 1,    "finger": 9},
+      {"id": "shiftr", "legend": ["Shift"]     , "size": 2.75, "finger": 9}
     ],
     [
-      {
-        "finger": 0,
-        "id": "ctrl",
-        "legend": [
-          "Ctrl"
-        ],
-        "size": 1.25
-      },
-      {
-        "finger": 0,
-        "id": "win",
-        "legend": [
-          "Win"
-        ],
-        "size": 1.25
-      },
-      {
-        "finger": 0,
-        "id": "alt",
-        "legend": [
-          "Alt"
-        ],
-        "size": 1.25
-      },
-      {
-        "finger": 4,
-        "id": "space",
-        "legend": [
-          "Space"
-        ],
-        "size": 6.25
-      },
-      {
-        "finger": 9,
-        "id": "ralt",
-        "legend": [
-          "Alt"
-        ],
-        "size": 1.25
-      },
-      {
-        "finger": 9,
-        "id": "rwin",
-        "legend": [
-          "Win"
-        ],
-        "size": 1.25
-      },
-      {
-        "finger": 9,
-        "id": "menu",
-        "legend": [
-          "Menu"
-        ],
-        "size": 1.25
-      },
-      {
-        "finger": 9,
-        "id": "rctrl",
-        "legend": [
-          "Ctrl"
-        ],
-        "size": 1.25
-      }
+      {"id": "ctrl"  , "legend": ["Ctrl"]      , "size": 1.25, "finger": 0},
+      {"id": "win"   , "legend": ["Win"]       , "size": 1.25, "finger": 0},
+      {"id": "alt"   , "legend": ["Alt"]       , "size": 1.25, "finger": 0},
+      {"id": "space" , "legend": ["Space", "ー", "！"]    , "size": 6.25, "finger": 4, "home": true},
+      {"id": "altr"  , "legend": ["Alt"]       , "size": 1.25, "finger": 8},
+      {"id": "winr"  , "legend": ["Win"]       , "size": 1.25, "finger": 9},
+      {"id": "app"   , "legend": ["App"]       , "size": 1.25, "finger": 9},
+      {"id": "ctrlr" , "legend": ["Ctrl"]      , "size": 1.25, "finger": 9}
     ]
   ],
-  "name": "新月配列 (Shingetsu Layout)",
-  "remark": "★/☆レイヤー切替方式のかな配列。"
+  "arpeggio": [
+    [[1, 2], [1, 3]], [[1, 3], [1, 4]], [[1, 2], [1, 4]],
+    [[2, 2], [2, 3]], [[2, 3], [2, 4]], [[2, 2], [2, 4]],
+    [[1, 3], [2, 4]], [[1, 2], [2, 4]], [[2, 3], [3, 4]], [[2, 2], [3, 4]],
+    [[1, 8], [1, 9]], [[1, 7], [1, 8]], [[1, 7], [1, 9]],
+    [[2, 8], [2, 9]], [[2, 7], [2, 8]], [[2, 7], [2, 9]],
+    [[2, 7], [1, 8]], [[2, 7], [1, 9]], [[3, 7], [2, 8]], [[3, 7], [2, 9]]
+  ],
+  "conversion": {
+    " ": {"keys": ["space"], "shift":[], "type":"seq"},
+    "、": {"keys": [","], "shift":[], "type":"seq"},
+    "。": {"keys": ["."], "shift":[], "type":"seq"},
+    "「": {"keys": ["["], "shift":[], "type":"seq"},
+    "」": {"keys": ["]"], "shift":[], "type":"seq"},
+    "゛": {"keys": ["l"], "shift":[], "type":"seq"},
+    "゜": {"keys": ["l", "l"], "shift":[], "type":"seq"},
+    "ー": {"keys": ["space"], "shift":["d"], "type":"seq"},
+    "！": {"keys": ["space"], "shift":["d", "l"], "type":"seq"},
+    "・": {"keys": ["/"], "shift":[], "type":"seq"},
+
+    "あ": {"keys": ["a"], "shift":["k"], "type":"seq"},
+    "い": {"keys": ["i"], "shift":[], "type":"seq"},
+    "う": {"keys": ["j"], "shift":[], "type":"seq"},
+    "え": {"keys": ["u"], "shift":["d"], "type":"seq"},
+    "お": {"keys": ["j"], "shift":["d"], "type":"seq"},
+
+    "か": {"keys": ["s"], "shift":[], "type":"seq"},
+    "き": {"keys": [";"], "shift":[], "type":"seq"},
+    "く": {"keys": ["h"], "shift":[], "type":"seq"},
+    "け": {"keys": ["x"], "shift":[], "type":"seq"},
+    "こ": {"keys": ["w"], "shift":[], "type":"seq"},
+
+    "さ": {"keys": ["b"], "shift":[], "type":"seq"},
+    "し": {"keys": ["e"], "shift":[], "type":"seq"},
+    "す": {"keys": ["z"], "shift":[], "type":"seq"},
+    "せ": {"keys": ["c"], "shift":["k"], "type":"seq"},
+    "そ": {"keys": ["q"], "shift":[], "type":"seq"},
+
+    "た": {"keys": ["g"], "shift":[], "type":"seq"},
+    "ち": {"keys": ["f"], "shift":["k"], "type":"seq"},
+    "つ": {"keys": ["y"], "shift":[], "type":"seq"},
+    "て": {"keys": ["r"], "shift":[], "type":"seq"},
+    "と": {"keys": ["f"], "shift":[], "type":"seq"},
+
+    "な": {"keys": ["v"], "shift":[], "type":"seq"},
+    "に": {"keys": ["c"], "shift":[], "type":"seq"},
+    "ぬ": {"keys": ["y"], "shift":["d"], "type":"seq"},
+    "ね": {"keys": ["z"], "shift":["k"], "type":"seq"},
+    "の": {"keys": ["o"], "shift":[], "type":"seq"},
+
+    "は": {"keys": ["a"], "shift":[], "type":"seq"},
+    "ひ": {"keys": ["w"], "shift":["k"], "type":"seq"},
+    "ふ": {"keys": ["r"], "shift":["k"], "type":"seq"},
+    "へ": {"keys": ["x"], "shift":["k"], "type":"seq"},
+    "ほ": {"keys": ["e"], "shift":["k"], "type":"seq"},
+
+    "ま": {"keys": ["h"], "shift":["d"], "type":"seq"},
+    "み": {"keys": ["i"], "shift":["d"], "type":"seq"},
+    "む": {"keys": ["n"], "shift":["d"], "type":"seq"},
+    "め": {"keys": ["t"], "shift":["k"], "type":"seq"},
+    "も": {"keys": ["k"], "shift":["d"], "type":"seq"},
+
+    "や": {"keys": ["o"], "shift":["d"], "type":"seq"},
+    "ゆ": {"keys": ["q"], "shift":["k"], "type":"seq"},
+    "よ": {"keys": ["g"], "shift":["k"], "type":"seq"},
+
+    "ら": {"keys": ["d"], "shift":["k"], "type":"seq"},
+    "り": {"keys": ["p"], "shift":[], "type":"seq"},
+    "る": {"keys": ["m"], "shift":[], "type":"seq"},
+    "れ": {"keys": [";"], "shift":["d"], "type":"seq"},
+    "ろ": {"keys": ["m"], "shift":["d"], "type":"seq"},
+
+    "わ": {"keys": ["l"], "shift":["k"], "type":"seq"},
+    "を": {"keys": ["s"], "shift":["k"], "type":"seq"},
+    "ん": {"keys": ["u"], "shift":[], "type":"seq"},
+
+    "っ": {"keys": ["n"], "shift":[], "type":"seq"},
+    "ょ": {"keys": ["t"], "shift":[], "type":"seq"},
+    "ゃ": {"keys": ["b"], "shift":["k"], "type":"seq"},
+    "ゅ": {"keys": ["v"], "shift":["k"], "type":"seq"},
+
+    "ぁ": {"keys": ["a", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぃ": {"keys": ["i", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぅ": {"keys": ["j", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぇ": {"keys": ["u", "d", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぉ": {"keys": ["j", "d", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "が": {"keys": ["s", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぎ": {"keys": [";", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぐ": {"keys": ["h", "l"], "shift":[], "type":"seq", "ime": true},
+    "げ": {"keys": ["x", "l"], "shift":[], "type":"seq", "ime": true},
+    "ご": {"keys": ["w", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "ざ": {"keys": ["b", "l"], "shift":[], "type":"seq", "ime": true},
+    "じ": {"keys": ["e", "l"], "shift":[], "type":"seq", "ime": true},
+    "ず": {"keys": ["z", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぜ": {"keys": ["c", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぞ": {"keys": ["q", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "だ": {"keys": ["g", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぢ": {"keys": ["f", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "づ": {"keys": ["y", "l"], "shift":[], "type":"seq", "ime": true},
+    "で": {"keys": ["r", "l"], "shift":[], "type":"seq", "ime": true},
+    "ど": {"keys": ["f", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "ば": {"keys": ["a", "l"], "shift":[], "type":"seq", "ime": true},
+    "び": {"keys": ["w", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぶ": {"keys": ["r", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "べ": {"keys": ["x", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぼ": {"keys": ["e", "k", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "ぱ": {"keys": ["a", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぴ": {"keys": ["w", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぷ": {"keys": ["r", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぺ": {"keys": ["x", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぽ": {"keys": ["e", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "ゔ": {"keys": ["j", "l"], "shift":[], "type":"seq", "ime": true},
+
+    "きゃ": {"keys": [";", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "きゅ": {"keys": [";", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "きょ": {"keys": [";", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "しゃ": {"keys": ["e", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "しゅ": {"keys": ["e", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "しょ": {"keys": ["e", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "ちゃ": {"keys": ["f", "k", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "ちゅ": {"keys": ["f", "k", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "ちょ": {"keys": ["f", "k", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "にゃ": {"keys": ["c", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "にゅ": {"keys": ["c", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "にょ": {"keys": ["c", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "ひゃ": {"keys": ["w", "k", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "ひゅ": {"keys": ["w", "k", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "ひょ": {"keys": ["w", "k", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "みゃ": {"keys": ["h"], "shift":["d", "l"], "type":"seq", "ime": true},
+    "みゅ": {"keys": ["j"], "shift":["d", "l"], "type":"seq", "ime": true},
+    "みょ": {"keys": ["k"], "shift":["d", "l"], "type":"seq", "ime": true},
+
+    "りゃ": {"keys": ["p", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "りゅ": {"keys": ["p", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "りょ": {"keys": ["p", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "ぎゃ": {"keys": ["v"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ぎゅ": {"keys": ["f"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ぎょ": {"keys": ["r"], "shift":["k", "l"], "type":"seq", "ime": true},
+
+    "じゃ": {"keys": ["c"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "じゅ": {"keys": ["d"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "じょ": {"keys": ["e"], "shift":["k", "l"], "type":"seq", "ime": true},
+
+    "ぢゃ": {"keys": ["b"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ぢゅ": {"keys": ["f", "k", "l", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "ぢょ": {"keys": ["f", "k", "l", "t"], "shift":[], "type":"seq", "ime": true},
+
+    "びゃ": {"keys": ["x"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "びゅ": {"keys": ["s"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "びょ": {"keys": ["w"], "shift":["k", "l"], "type":"seq", "ime": true},
+
+    "ぴゃ": {"keys": ["z"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ぴゅ": {"keys": ["a"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ぴょ": {"keys": ["q"], "shift":["k", "l"], "type":"seq", "ime": true},
+
+    "でゅ": {"keys": ["g"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "でゃ": {"keys": ["r", "l", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "でょ": {"keys": ["r", "l", "t"], "shift":[], "type":"seq", "ime": true}
+  }
 }

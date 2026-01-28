@@ -1,15 +1,15 @@
 # 新月配列 (Shingetsu Layout)
 
-**月配列2-263をベースに、Colemak風の音素配置を取り入れた日本語かな配列**
+**月配列2-263をベースとした、最小かつ最高効率のPCキーボード用かな配列**
 
-遺伝的アルゴリズム（GA）による最適化で、打鍵効率と学習しやすさを両立。
+スマホフリック入力の「濁音・半濁音・小文字を1キーに統合する」というアイデアを着想として、PCキーボード配列に適用。
 
 ## 特徴
 
 - **月配列2-263ベース**: 実績ある月配列の前置シフト方式を継承
-- **Colemak音素配置**: 英語キーボード配列Colemakの設計思想を日本語に応用
+- **1キー統合**: 濁音（゛）・半濁音（゜）・小文字を1キーで入力可能（スマホフリック入力の着想）
+- **最小打鍵数**: 効率的な配列設計による打鍵数の最小化
 - **3層構造**: 無シフト / ☆シフト / ★シフト の前置シフト方式
-- **GA最適化**: 同指連続回避、ホームポジション重視、左右交互打鍵などを数値評価
 
 ## 配列構造
 
@@ -18,124 +18,35 @@
 | Layer 0 | そのまま打鍵 | 高頻度文字（1打鍵） |
 | Layer 1 | ☆キー → 文字 | 中頻度文字（2打鍵） |
 | Layer 2 | ★キー → 文字 | 低頻度文字（2打鍵） |
+| 濁音・半濁音・小文字 | ゛゜小キー → 文字 | 濁音・半濁音・小文字（2打鍵） |
 
-## インストール
-
-### ビルド済みバイナリ
-
-[Releases](https://github.com/nagamine-git/shingetsu-layout/releases) からダウンロード
-
-### ソースからビルド
-
-```bash
-git clone https://github.com/nagamine-git/shingetsu-layout.git
-cd shingetsu-layout
-cargo build --release
-```
-
-## 使い方
-
-### 配列の生成（GA最適化）
-
-```bash
-# N-gramファイルを使用（推奨）
-./target/release/kana_layout_optimizer \
-  --gram1 1gram.txt --gram2 2gram.txt \
-  --gram3 3gram.txt --gram4 4gram.txt \
-  -p 500 -g 1000
-
-# TUIモード（リアルタイム可視化）
-./target/release/kana_layout_optimizer \
-  --gram1 1gram.txt --gram2 2gram.txt \
-  --gram3 3gram.txt --gram4 4gram.txt \
-  -p 500 -g 500 --tui
-```
-
-### 出力形式
-
-最適化完了時に以下の形式で自動エクスポート:
+## ファイル一覧
 
 | ファイル | 用途 |
 |---------|------|
-| `***.json` | 配列データ（スコア含む） |
-| `***_analyzer.json` | [keyboard_analyzer](https://github.com/eswai/keyboard_analyzer) 用 |
-| `***-ansi.tsv` | hazkey用ローマ字テーブル（QWERTY） |
-| `***-ansi-colemak.tsv` | hazkey用ローマ字テーブル（Colemak） |
-| `***-karabiner.json` | Karabiner Elements用 |
+| `shingetsu_analyzer.json` | [keyboard_analyzer](https://github.com/eswai/keyboard_analyzer) 用の配列データ |
+| `shingetsu-ansi-qwerty.tsv` | hazkey用ローマ字テーブル（QWERTY配列） |
+| `shingetsu-ansi-colemak.tsv` | hazkey用ローマ字テーブル（Colemak配列） |
+| `shingetsu-karabiner-qwerty.json` | Karabiner Elements用設定ファイル |
 
-## 評価メトリクス
+## インストール方法
 
-### Core Metrics（必須・乗算評価）
+### Karabiner Elements（macOS）
 
-| メトリクス | 説明 |
-|-----------|------|
-| 同指連続回避 | 同じ指での連続打鍵を最小化 |
-| 段飛ばし回避 | 同指での段越えを最小化 |
-| ホームポジション率 | 中段キーの使用率 |
-| 位置別コスト | 高頻度文字を打ちやすい位置に配置 |
-| 左右交互打鍵 | 左右の手の切り替え頻度 |
-| 単打鍵率 | シフト不要な打鍵の割合 |
-| Colemak類似度 | 音素配置のColemak一致度 |
+1. `shingetsu-karabiner-qwerty.json` を開く
+2. Karabiner Elementsの設定にインポート
 
-### Bonus Metrics（奨励・加算評価）
+### hazkey（Windows/Linux）
 
-| メトリクス | 説明 |
-|-----------|------|
-| 月配列類似度 | 月配列2-263との位置一致度 |
-| ロール率 | 同手での滑らかな指の流れ |
-| インロール | 外→内への指の動き |
-| アルペジオ | 隣接指での連続打鍵 |
-| リダイレクト回避 | 3連打での方向転換を回避 |
+1. `shingetsu-ansi-qwerty.tsv` または `shingetsu-ansi-colemak.tsv` をhazkeyの設定にインポート
 
-## オプション一覧
+### keyboard_analyzer
 
-### 基本オプション
-
-| オプション | デフォルト | 説明 |
-|------------|-----------|------|
-| `--gram1` | - | 1-gramファイル |
-| `--gram2` | - | 2-gramファイル |
-| `--gram3` | - | 3-gramファイル |
-| `--gram4` | - | 4-gramファイル |
-| `-c, --corpus` | `corpus.txt` | コーパスファイル |
-| `-p, --population` | 500 | GA集団サイズ |
-| `-g, --generations` | 1000 | GA世代数 |
-| `-m, --mutation-rate` | 0.15 | 突然変異率 |
-| `-s, --seed` | 42 | 乱数シード |
-| `--tui` | false | TUIモード |
-| `-o, --output` | `best_layout.json` | 出力ファイル |
-
-### 評価重みオプション
-
-Core Metrics:
-- `--w-same-finger`, `--w-row-skip`, `--w-home-position`
-- `--w-total-keystrokes`, `--w-alternating`, `--w-single-key`
-- `--w-colemak-similarity`, `--w-position-cost`
-
-Bonus Metrics:
-- `--w-redirect-low`, `--w-tsuki-similarity`, `--w-roll`
-- `--w-inroll`, `--w-arpeggio`, `--w-memorability`, `--w-shift-balance`
-
-### GAパラメータの目安
-
-`-p`（集団サイズ）と`-g`（世代数）の積が総計算量。目的に応じて調整:
-
-| 用途 | コマンド例 | 時間目安 |
-|-----|-----------|---------|
-| 動作確認 | `-p 100 -g 100` | 数秒 |
-| 高速テスト | `-p 200 -g 500` | 数分 |
-| 標準 | `-p 500 -g 1000` | 10-30分 |
-| 高品質 | `-p 1000 -g 3000` | 1-2時間 |
-| 本番 | `-p 2000 -g 10000 --multi-run 8` | 一晩 |
-
-- **p大/g小**: 多様性重視、収束遅め
-- **p小/g大**: 早期収束、局所解リスク
-- **multi-run**: 異なるシードで並列実行、最良を選択
+1. `shingetsu_analyzer.json` をkeyboard_analyzerで読み込み
 
 ## 関連プロジェクト
 
 - [月配列](https://jisx6004.client.jp/tsuki.html) - 本配列のベースとなった前置シフト方式のかな配列
-- [Colemak](https://colemak.com/) - 音素配置の参考にした英語キーボード配列
 - [keyboard_analyzer](https://github.com/eswai/keyboard_analyzer) - かな配列の評価・可視化ツール
 
 ## ライセンス
@@ -144,4 +55,4 @@ MIT
 
 ## Keywords
 
-日本語入力, かな配列, キーボードレイアウト, 月配列, 月配列2-263, Colemak, 前置シフト, 遺伝的アルゴリズム, GA, Rust, Shingetsu, Japanese Input, Kana Layout, Keyboard Layout
+日本語入力, かな配列, キーボードレイアウト, 月配列, 月配列2-263, 前置シフト, Shingetsu, Japanese Input, Kana Layout, Keyboard Layout
