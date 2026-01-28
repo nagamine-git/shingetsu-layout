@@ -297,9 +297,6 @@
           "key_code": "delete_or_backspace"
         },
         {
-          "key_code": "delete_or_backspace"
-        },
-        {
           "key_code": "p"
         },
         {
@@ -555,9 +552,6 @@
           "key_code": "delete_or_backspace"
         },
         {
-          "key_code": "delete_or_backspace"
-        },
-        {
           "key_code": "p"
         },
         {
@@ -809,9 +803,6 @@
         }
       },
       "to": [
-        {
-          "key_code": "delete_or_backspace"
-        },
         {
           "key_code": "delete_or_backspace"
         },
@@ -1871,9 +1862,6 @@
         }
       },
       "to": [
-        {
-          "key_code": "delete_or_backspace"
-        },
         {
           "key_code": "delete_or_backspace"
         },
@@ -2946,9 +2934,6 @@
           "key_code": "delete_or_backspace"
         },
         {
-          "key_code": "delete_or_backspace"
-        },
-        {
           "key_code": "x"
         },
         {
@@ -3709,9 +3694,6 @@
         }
       },
       "to": [
-        {
-          "key_code": "delete_or_backspace"
-        },
         {
           "key_code": "delete_or_backspace"
         },
