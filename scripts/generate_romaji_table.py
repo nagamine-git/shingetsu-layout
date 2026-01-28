@@ -616,6 +616,20 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
                                     ]
                                 })
 
+                        # ゔ→ぅ変換
+                        if voiced in VU_TO_KOGAKI_MAP:
+                            kogaki = VU_TO_KOGAKI_MAP[voiced]
+                            kogaki_romaji = KANA_TO_ROMAJI.get(kogaki)
+                            if kogaki_romaji:
+                                manipulators.append({
+                                    "type": "basic",
+                                    "conditions": [{"type": "variable_if", "name": "last_char", "value": voiced_char_id}] + ja_conditions,
+                                    "from": {"key_code": dakuten_keycode, "modifiers": {"optional": ["caps_lock"]}},
+                                    "to": [{"key_code": "delete_or_backspace"}, {"key_code": "delete_or_backspace"}] + romaji_to_keycodes(kogaki_romaji) + [
+                                        {"set_variable": {"name": "last_char", "value": 0}}
+                                    ]
+                                })
+
                 # 母音→小書き (あ+゛→ぁ)
                 if base_char in VOWEL_TO_KOGAKI_MAP:
                     kogaki = VOWEL_TO_KOGAKI_MAP[base_char]
@@ -653,11 +667,11 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
                 ]
             })
 
-    # rules[の中身だけを返す (配列)
-    return [{
+    # rules[の中身だけを返す (object)
+    return {
         "description": f"{name} - 前置/後置シフト ({layout_type})",
         "manipulators": manipulators
-    }]
+    }
 
 
 def main():
