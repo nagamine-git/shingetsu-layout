@@ -327,8 +327,12 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
         converted_keys = [convert_key_to_layout(k, use_colemak) for k in keys]
         converted_shift = [convert_key_to_layout(s, use_colemak) for s in shift]
 
-        # キー出力シーケンスを作成
-        to_keys = [{"key_code": c} for c in romaji]
+        # キー出力シーケンスを作成 (特殊キーはkey_codeに変換)
+        def romaji_char_to_keycode(c):
+            if c == '-':
+                return 'hyphen'
+            return c
+        to_keys = [{"key_code": romaji_char_to_keycode(c)} for c in romaji]
 
         shift_d_key = convert_key_to_layout('d', use_colemak)
         shift_k_key = convert_key_to_layout('k', use_colemak)
@@ -385,15 +389,13 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
         ]
     })
 
-    return {
-        "title": f"{name} ({layout_type})",
-        "rules": [
-            {
-                "description": f"{name} - 前置/後置シフト ({layout_type})",
-                "manipulators": manipulators
-            }
-        ]
-    }
+    # rulesの中身だけを返す
+    return [
+        {
+            "description": f"{name} - 前置/後置シフト ({layout_type})",
+            "manipulators": manipulators
+        }
+    ]
 
 
 def main():
