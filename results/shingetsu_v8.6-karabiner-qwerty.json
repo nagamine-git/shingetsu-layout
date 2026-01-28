@@ -3124,55 +3124,7 @@
         {
           "type": "variable_if",
           "name": "shift_state",
-          "value": 2
-        },
-        {
-          "input_sources": [
-            {
-              "language": "ja"
-            }
-          ],
-          "type": "input_source_if"
-        },
-        {
-          "input_sources": [
-            {
-              "input_mode_id": "Roman$"
-            }
-          ],
-          "type": "input_source_unless"
-        }
-      ],
-      "from": {
-        "key_code": "l",
-        "modifiers": {
-          "optional": [
-            "caps_lock"
-          ]
-        }
-      },
-      "to": [
-        {
-          "set_variable": {
-            "name": "last_char",
-            "value": 0
-          }
-        },
-        {
-          "set_variable": {
-            "name": "shift_state",
-            "value": 3
-          }
-        }
-      ]
-    },
-    {
-      "type": "basic",
-      "conditions": [
-        {
-          "type": "variable_if",
-          "name": "shift_state",
-          "value": 3
+          "value": 1
         },
         {
           "input_sources": [
@@ -3216,6 +3168,54 @@
           "set_variable": {
             "name": "shift_state",
             "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "shift_state",
+          "value": 2
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "l",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        },
+        {
+          "set_variable": {
+            "name": "shift_state",
+            "value": 3
           }
         }
       ]

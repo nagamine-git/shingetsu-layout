@@ -409,6 +409,16 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
 
         # ゛キー (l)
         if qwerty_key == 'l':
+            # ★+゛: わ を出力 (TSVと同じ: ★l → わ)
+            manipulators.append({
+                "type": "basic",
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": romaji_to_keycodes("wa") + [
+                    {"set_variable": {"name": "last_char", "value": 0}},
+                    {"set_variable": {"name": "shift_state", "value": 0}}
+                ]
+            })
             # ☆+゛: 拗音シフト状態(shift_state=3)に移行
             manipulators.append({
                 "type": "basic",
@@ -417,16 +427,6 @@ def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
                 "to": [
                     {"set_variable": {"name": "last_char", "value": 0}},
                     {"set_variable": {"name": "shift_state", "value": 3}}
-                ]
-            })
-            # 拗音シフト状態(shift_state=3)でもう一度゛を押したら: わ を出力
-            manipulators.append({
-                "type": "basic",
-                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 3}] + ja_conditions,
-                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
-                "to": romaji_to_keycodes("wa") + [
-                    {"set_variable": {"name": "last_char", "value": 0}},
-                    {"set_variable": {"name": "shift_state", "value": 0}}
                 ]
             })
             # 通常時(shift_state=0): 何も出力しない (後置濁点用のルールは各文字の後に追加)
