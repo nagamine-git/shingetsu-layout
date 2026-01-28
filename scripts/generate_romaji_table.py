@@ -34,11 +34,6 @@ DAKUTEN_MAP = {
     'う': 'ゔ',
 }
 
-# 半濁音変換 (清音から)
-HANDAKUTEN_MAP = {
-    'は': 'ぱ', 'ひ': 'ぴ', 'ふ': 'ぷ', 'へ': 'ぺ', 'ほ': 'ぽ',
-}
-
 # 濁音→半濁音変換 (2回目の゛で濁音から半濁音へ)
 DAKUTEN_TO_HANDAKUTEN_MAP = {
     'ば': 'ぱ', 'び': 'ぴ', 'ぶ': 'ぷ', 'べ': 'ぺ', 'ぼ': 'ぽ',
@@ -52,12 +47,6 @@ VOWEL_TO_KOGAKI_MAP = {
 # ゔ→ぅ (2回目の゛で小書き)
 VU_TO_KOGAKI_MAP = {
     'ゔ': 'ぅ',
-}
-
-# 小書き変換
-KOGAKI_MAP = {
-    'あ': 'ぁ', 'い': 'ぃ', 'う': 'ぅ', 'え': 'ぇ', 'お': 'ぉ',
-    'や': 'ゃ', 'ゆ': 'ゅ', 'よ': 'ょ', 'つ': 'っ', 'わ': 'ゎ',
 }
 
 # ひらがな → ローマ字変換 (Karabiner用)
@@ -80,6 +69,7 @@ KANA_TO_ROMAJI = {
     'ぁ': 'xa', 'ぃ': 'xi', 'ぅ': 'xu', 'ぇ': 'xe', 'ぉ': 'xo',
     'ゃ': 'xya', 'ゅ': 'xyu', 'ょ': 'xyo', 'っ': 'xtu',
     'ー': '-', 'ゔ': 'vu',
+    '、': ',', '。': '.', '「': '[', '」': ']',
 }
 
 
@@ -104,16 +94,12 @@ def generate_hazkey_ansi(data: dict, use_colemak: bool = False) -> str:
     後置シフト: かな文字 + 修飾キー → 変換後かな
     """
     lines = []
-    name = data.get('name', '新月配列')
-    layout_type = "Colemak" if use_colemak else "QWERTY"
-
     conversion = data.get('conversion', {})
 
     # シフトキーの位置 (QWERTY基準で定義されている)
     shift_star_key = convert_key_to_layout('d', use_colemak)  # ★
     shift_circle_key = convert_key_to_layout('k', use_colemak)  # ☆
     dakuten_key = convert_key_to_layout('l', use_colemak)  # ゛
-    handakuten_key = '/'  # ゜ (ANSIでは/キー)
 
     # ベースレイヤーの文字マッピングを構築
     base_chars = {}  # key -> char
@@ -129,14 +115,14 @@ def generate_hazkey_ansi(data: dict, use_colemak: bool = False) -> str:
         if not keys:
             continue
 
-        # 記号はそのまま (・は\キーに固定なのでスキップ)
-        if char in ['、', '。', '「', '」', 'ー']:
+        # 記号はそのまま
+        if char in ['、', '。', '「', '」']:
             key = convert_key_to_layout(keys[0], use_colemak)
             base_chars[key] = char
             continue
 
         # スキップ
-        if char in [' ', '゛', '゜', '！'] or (len(char) == 1 and char.isascii()):
+        if char in [' ', '゛', '゜', '！', 'ー'] or (len(char) == 1 and char.isascii()):
             continue
 
         # シフト状態を判定
@@ -180,7 +166,7 @@ def generate_hazkey_ansi(data: dict, use_colemak: bool = False) -> str:
             lines.append(f"☆{k}\t{circle_chars[k]}")
 
     # 右手側ベースレイヤー
-    for key in ['y', 'u', 'i', 'o', 'p', '[', 'h', 'j', 'k', 'l', ';', "'", 'n', 'm', ',', '.', '/', '\\']:
+    for key in ['y', 'u', 'i', 'o', 'p', '[', 'h', 'j', 'k', 'l', ';', "'", 'n', 'm', ',', '.', '/']:
         k = convert_key_to_layout(key, use_colemak)
         if k == shift_circle_key:
             lines.append(f"{k}\t\t☆")
@@ -191,19 +177,22 @@ def generate_hazkey_ansi(data: dict, use_colemak: bool = False) -> str:
         elif k in base_chars:
             lines.append(f"{k}\t{base_chars[k]}")
 
+    # - キー → ー (長音)
+    hyphen_key = convert_key_to_layout('-', use_colemak)
+    lines.append(f"{hyphen_key}\tー")
+
     # ★シフト (右手側)
     for key in ['y', 'u', 'i', 'o', 'p', '[', 'h', 'j', 'k', 'l', ';', "'", ']', 'n', 'm', ',', '.', '/']:
         k = convert_key_to_layout(key, use_colemak)
         if k in star_chars:
             lines.append(f"★{k}\t{star_chars[k]}")
 
-    # ★ + ゛キー → わ (゛キーはl(QWERTY)/i(Colemak))
+    # ★ + ゛キー → わ
     lines.append(f"★{dakuten_key}\tわ")
 
     # 濁音 (後置シフト: かな + ゛)
     for base_kana, voiced_kana in DAKUTEN_MAP.items():
         lines.append(f"{base_kana}{dakuten_key}\t{voiced_kana}")
-
 
     # 2回押し: 濁音→半濁音 (ば + ゛ = ぱ)
     for voiced, half_voiced in DAKUTEN_TO_HANDAKUTEN_MAP.items():
@@ -225,7 +214,6 @@ def generate_hazkey_ansi(data: dict, use_colemak: bool = False) -> str:
                 lines.append(f"☆゛{k}\t{circle_dakuten_chars[k]}")
 
     # ☆゛ でも みゃ/みゅ/みょ を打てるように (右手キーも追加)
-    # ★゛は わ と競合するため、☆゛のみで拗音シフトを実現
     if star_dakuten_chars:
         for key in ['y', 'u', 'i', 'o', 'p', 'h', 'j', 'k', 'l', ';', 'n', 'm']:
             k = convert_key_to_layout(key, use_colemak)
@@ -257,145 +245,233 @@ def key_to_keycode(key: str) -> str:
     return mapping.get(key, key)
 
 
+def romaji_to_keycodes(romaji: str) -> List[dict]:
+    """ローマ字文字列をKarabinerのkey_code配列に変換"""
+    result = []
+    for c in romaji:
+        if c == '-':
+            result.append({"key_code": "hyphen"})
+        elif c == ',':
+            result.append({"key_code": "comma"})
+        elif c == '.':
+            result.append({"key_code": "period"})
+        elif c == '[':
+            result.append({"key_code": "open_bracket"})
+        elif c == ']':
+            result.append({"key_code": "close_bracket"})
+        else:
+            result.append({"key_code": c})
+    return result
+
+
 def generate_karabiner_json(data: dict, use_colemak: bool = False) -> dict:
-    """Karabiner Elements用JSONを生成"""
+    """Karabiner Elements用JSONを生成 (月配列2-263形式)"""
     name = data.get('name', '新月配列')
     layout_type = "Colemak" if use_colemak else "QWERTY"
 
     manipulators = []
     conversion = data.get('conversion', {})
 
-    # シフトキー定義
-    shift_d = convert_key_to_layout('d', use_colemak)
-    shift_k = convert_key_to_layout('k', use_colemak)
-    shift_l = convert_key_to_layout('l', use_colemak)
+    # シフトキー定義 (QWERTY基準)
+    shift_d = convert_key_to_layout('d', use_colemak)  # ★
+    shift_k = convert_key_to_layout('k', use_colemak)  # ☆
+    shift_l = convert_key_to_layout('l', use_colemak)  # ゛
 
-    # ★キー押下 → shift_state = 1
-    manipulators.append({
-        "type": "basic",
-        "from": {"key_code": key_to_keycode(shift_d), "modifiers": {"optional": ["caps_lock"]}},
-        "to": [{"set_variable": {"name": "shingetsu_shift", "value": 1}}],
-        "conditions": [
-            {"type": "variable_if", "name": "shingetsu_shift", "value": 0}
-        ]
-    })
+    # 日本語入力条件
+    ja_conditions = [
+        {"input_sources": [{"language": "ja"}], "type": "input_source_if"},
+        {"input_sources": [{"input_mode_id": "Roman$"}], "type": "input_source_unless"}
+    ]
 
-    # ☆キー押下 → shift_state = 2
-    manipulators.append({
-        "type": "basic",
-        "from": {"key_code": key_to_keycode(shift_k), "modifiers": {"optional": ["caps_lock"]}},
-        "to": [{"set_variable": {"name": "shingetsu_shift", "value": 2}}],
-        "conditions": [
-            {"type": "variable_if", "name": "shingetsu_shift", "value": 0}
-        ]
-    })
+    # last_char値マッピング (濁音用)
+    last_char_map = {}
+    char_id = 100
 
-    # ゛キー押下 (シフト状態1or2のとき) → shift_state = 3 or 4
-    manipulators.append({
-        "type": "basic",
-        "from": {"key_code": key_to_keycode(shift_l), "modifiers": {"optional": ["caps_lock"]}},
-        "to": [{"set_variable": {"name": "shingetsu_shift", "value": 3}}],
-        "conditions": [
-            {"type": "variable_if", "name": "shingetsu_shift", "value": 1}
-        ]
-    })
-    manipulators.append({
-        "type": "basic",
-        "from": {"key_code": key_to_keycode(shift_l), "modifiers": {"optional": ["caps_lock"]}},
-        "to": [{"set_variable": {"name": "shingetsu_shift", "value": 4}}],
-        "conditions": [
-            {"type": "variable_if", "name": "shingetsu_shift", "value": 2}
-        ]
-    })
+    # ベース/シフト文字のマッピングを構築
+    base_chars = {}  # key -> char
+    star_chars = {}  # key -> char (★シフト)
+    circle_chars = {}  # key -> char (☆シフト)
 
-    # 各文字のマッピングを生成
     for char, mapping in conversion.items():
         keys = mapping.get('keys', [])
         shift = mapping.get('shift', [])
 
-        if not keys or char in ['゛', '゜']:
+        if not keys or len(keys) != 1:
+            continue
+        if char in ['゛', '゜', ' ', '！']:
             continue
         if len(char) == 1 and char.isascii():
             continue
 
-        # ローマ字出力を取得
-        romaji = KANA_TO_ROMAJI.get(char, None)
-        if romaji is None:
+        key = keys[0]
+        has_d = 'd' in shift
+        has_k = 'k' in shift
+        has_l = 'l' in shift
+
+        if not shift:
+            base_chars[key] = char
+        elif has_d and not has_l:
+            star_chars[key] = char
+        elif has_k and not has_l:
+            circle_chars[key] = char
+
+    # 各キーのマッピングを生成
+    all_keys = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+                'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+                'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',
+                '[', "'", '-']
+
+    for qwerty_key in all_keys:
+        key = convert_key_to_layout(qwerty_key, use_colemak)
+        keycode = key_to_keycode(key)
+
+        # ★シフトキー (d)
+        if qwerty_key == 'd':
+            # シフト状態=1のとき: ら を出力
+            manipulators.append({
+                "type": "basic",
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": romaji_to_keycodes("ra") + [
+                    {"set_variable": {"name": "last_char", "value": 0}},
+                    {"set_variable": {"name": "shift_state", "value": 0}}
+                ]
+            })
+            # 通常時: シフト状態=1に設定
+            manipulators.append({
+                "type": "basic",
+                "conditions": ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": [
+                    {"set_variable": {"name": "last_char", "value": 0}},
+                    {"set_variable": {"name": "shift_state", "value": 1}}
+                ]
+            })
             continue
 
-        # Colemak変換
-        converted_keys = [convert_key_to_layout(k, use_colemak) for k in keys]
-        converted_shift = [convert_key_to_layout(s, use_colemak) for s in shift]
+        # ☆シフトキー (k)
+        if qwerty_key == 'k':
+            # シフト状態=1のとき: も を出力
+            manipulators.append({
+                "type": "basic",
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": romaji_to_keycodes("mo") + [
+                    {"set_variable": {"name": "last_char", "value": 0}},
+                    {"set_variable": {"name": "shift_state", "value": 0}}
+                ]
+            })
+            # 通常時: シフト状態=1に設定 (☆も★と同じshift_state=1を使用)
+            manipulators.append({
+                "type": "basic",
+                "conditions": ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": [
+                    {"set_variable": {"name": "last_char", "value": 0}},
+                    {"set_variable": {"name": "shift_state", "value": 1}}
+                ]
+            })
+            continue
 
-        # キー出力シーケンスを作成 (特殊キーはkey_codeに変換)
-        def romaji_char_to_keycode(c):
-            if c == '-':
-                return 'hyphen'
-            return c
-        to_keys = [{"key_code": romaji_char_to_keycode(c)} for c in romaji]
+        # ゛キー (l) - 後置濁点として機能、通常時は無効化
+        if qwerty_key == 'l':
+            # シフト状態=1のとき: わ を出力
+            manipulators.append({
+                "type": "basic",
+                "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": romaji_to_keycodes("wa") + [
+                    {"set_variable": {"name": "last_char", "value": 0}},
+                    {"set_variable": {"name": "shift_state", "value": 0}}
+                ]
+            })
+            # 通常時: 何も出力しない (後置濁点用のルールは各文字の後に追加)
+            manipulators.append({
+                "type": "basic",
+                "conditions": ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": [
+                    {"key_code": "vk_none"},
+                    {"set_variable": {"name": "last_char", "value": 0}}
+                ]
+            })
+            continue
 
-        shift_d_key = convert_key_to_layout('d', use_colemak)
-        shift_k_key = convert_key_to_layout('k', use_colemak)
-        shift_l_key = convert_key_to_layout('l', use_colemak)
+        # -キー → ー
+        if qwerty_key == '-':
+            manipulators.append({
+                "type": "basic",
+                "conditions": ja_conditions,
+                "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                "to": [{"key_code": "hyphen"}, {"set_variable": {"name": "last_char", "value": 0}}]
+            })
+            continue
 
-        # 条件を決定
-        if not shift:
-            if len(keys) == 1:
+        # シフト面の文字
+        shifted_char = star_chars.get(qwerty_key) or circle_chars.get(qwerty_key)
+        if shifted_char:
+            romaji = KANA_TO_ROMAJI.get(shifted_char)
+            if romaji:
                 manipulators.append({
                     "type": "basic",
-                    "from": {"key_code": key_to_keycode(converted_keys[0]), "modifiers": {"optional": ["caps_lock"]}},
-                    "to": to_keys + [
-                        {"set_variable": {"name": "shingetsu_shift", "value": 0}}
-                    ],
-                    "conditions": [
-                        {"type": "variable_if", "name": "shingetsu_shift", "value": 0}
-                    ]
-                })
-        else:
-            has_d = (shift_d_key in converted_shift)
-            has_k = (shift_k_key in converted_shift)
-            has_l = (shift_l_key in converted_shift)
-
-            if has_d and has_l:
-                shift_state = 3
-            elif has_k and has_l:
-                shift_state = 4
-            elif has_d:
-                shift_state = 1
-            elif has_k:
-                shift_state = 2
-            else:
-                continue
-
-            if len(keys) == 1:
-                manipulators.append({
-                    "type": "basic",
-                    "from": {"key_code": key_to_keycode(converted_keys[0]), "modifiers": {"optional": ["caps_lock"]}},
-                    "to": to_keys + [
-                        {"set_variable": {"name": "shingetsu_shift", "value": 0}}
-                    ],
-                    "conditions": [
-                        {"type": "variable_if", "name": "shingetsu_shift", "value": shift_state}
+                    "conditions": [{"type": "variable_if", "name": "shift_state", "value": 1}] + ja_conditions,
+                    "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                    "to": romaji_to_keycodes(romaji) + [
+                        {"set_variable": {"name": "last_char", "value": 0}},
+                        {"set_variable": {"name": "shift_state", "value": 0}}
                     ]
                 })
 
-    # Escでリセット
-    manipulators.append({
-        "type": "basic",
-        "from": {"key_code": "escape"},
-        "to": [
-            {"key_code": "escape"},
-            {"set_variable": {"name": "shingetsu_shift", "value": 0}}
-        ]
-    })
+        # ベース面の文字
+        base_char = base_chars.get(qwerty_key)
+        if base_char:
+            romaji = KANA_TO_ROMAJI.get(base_char)
+            if romaji:
+                # 濁音変換可能な文字の場合、last_charを設定
+                if base_char in DAKUTEN_MAP:
+                    char_id += 1
+                    last_char_map[base_char] = char_id
 
-    # rulesの中身だけを返す
-    return [
-        {
+                    manipulators.append({
+                        "type": "basic",
+                        "conditions": ja_conditions,
+                        "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                        "to": romaji_to_keycodes(romaji) + [
+                            {"set_variable": {"name": "last_char", "value": char_id}}
+                        ]
+                    })
+
+                    # 濁音変換ルール (last_char + ゛)
+                    voiced = DAKUTEN_MAP[base_char]
+                    voiced_romaji = KANA_TO_ROMAJI.get(voiced)
+                    if voiced_romaji:
+                        dakuten_keycode = key_to_keycode(convert_key_to_layout('l', use_colemak))
+                        manipulators.append({
+                            "type": "basic",
+                            "conditions": [{"type": "variable_if", "name": "last_char", "value": char_id}] + ja_conditions,
+                            "from": {"key_code": dakuten_keycode, "modifiers": {"optional": ["caps_lock"]}},
+                            "to": [{"key_code": "delete_or_backspace"}] + romaji_to_keycodes(voiced_romaji) + [
+                                {"set_variable": {"name": "last_char", "value": 0}}
+                            ]
+                        })
+                else:
+                    manipulators.append({
+                        "type": "basic",
+                        "conditions": ja_conditions,
+                        "from": {"key_code": keycode, "modifiers": {"optional": ["caps_lock"]}},
+                        "to": romaji_to_keycodes(romaji) + [
+                            {"set_variable": {"name": "last_char", "value": 0}}
+                        ]
+                    })
+
+    # objectとして返す (配列ではない)
+    return {
+        "title": f"{name}",
+        "rules": [{
             "description": f"{name} - 前置/後置シフト ({layout_type})",
             "manipulators": manipulators
-        }
-    ]
+        }]
+    }
 
 
 def main():
