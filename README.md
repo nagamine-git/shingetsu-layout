@@ -11,6 +11,9 @@
 
 Google日本語入力やKarabiner-Elements等で利用可能です。
 
+> [!TIP]
+> **AIエージェントをご利用の方へ**: このリポジトリは [llms.txt](./llms.txt) を提供しています。新月配列の仕様をAIに正確に把握させるためにご活用ください。
+
 ## なぜ新月配列なのか？ (Concept)
 
 従来の月配列の快適さを維持しつつ、以下の課題を解決しました。
@@ -68,6 +71,6 @@ MIT
 
 ## Keywords
 
-日本語入力, かな配列, キーボードレイアウト, 月配列, 月配列2-263, 前置シフト, Shingetsu, Japanese Input, Kana Layout, Keyboard Layout
+日本語入力, かな配列, キーボードレイアウト, 月配列, 月配列2-263, 前置シフト, 効率化, タイピング, 自作キーボード, Shingetsu, Japanese Input, Kana Layout, Keyboard Layout, Ergonomics, Karabiner-Elements, hazkey
 
 
