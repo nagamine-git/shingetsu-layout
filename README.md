@@ -3,7 +3,8 @@
 ![License](https://img.shields.io/github/license/nagamine-git/shingetsu-layout)
 ![Stars](https://img.shields.io/github/stars/nagamine-git/shingetsu-layout)
 
-<img width="847" height="742" alt="新月配列のキーマップ図" src="https://github.com/user-attachments/assets/97a4e9fe-1185-4dd7-b79f-34eae9714fac" />
+<img width="807" height="732" alt="新月配列のキーマップ図" src="https://github.com/user-attachments/assets/701671b2-7a77-4537-ac80-92eb74f8feaa" />
+
 
 ## 新月配列とは？
 
