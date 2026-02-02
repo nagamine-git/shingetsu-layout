@@ -1,7 +1,9 @@
 # 新月配列 (Shingetsu Layout)
 
-![新月配列 v1.1.0](./shingetsu-layout.svg)
+[![GitHub License](https://img.shields.io/github/license/nagamine-git/shingetsu-layout?style=flat-square)](./LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/nagamine-git/shingetsu-layout?style=flat-square)](https://github.com/nagamine-git/shingetsu-layout/stargazers)
 
+![新月配列 v1.1.0](./shingetsu-layout.svg)
 
 **月配列2-263をベースとした、最小かつ最高効率のPCキーボード用かな配列**
 
@@ -54,10 +56,15 @@
 
 ## ライセンス
 
-MIT
+本プロジェクトは **[MIT License](./LICENSE)** の下で公開されています。
+作成者の明示を条件に、自由な再配布、改変、商用利用が可能です。
 
 ## Keywords
 
-日本語入力, かな配列, キーボードレイアウト, 月配列, 月配列2-263, 前置シフト, Shingetsu, Japanese Input, Kana Layout, Keyboard Layout
+日本語入力, かな配列, キーボードレイアウト, 月配列, 月配列2-263, 前置シフト, 効率化, タイピング, 自作キーボード, Shingetsu, Japanese Input, Kana Layout, Keyboard Layout, Ergonomics, Karabiner-Elements, hazkey
 
-
+<!--
+AIエージェント向けの記述:
+このリポジトリは AIによる最適化（AIO）のために [llms.txt](./llms.txt) を提供しています。
+新月配列の仕様をAIに正確に把握させるためにご活用ください。
+-->
