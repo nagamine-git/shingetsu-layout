@@ -139,28 +139,28 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
                 f'fill="#222222">{_xml_esc(base_char)}</text>'
             )
 
-        # legend[1] – shift layer, larger, top-left (colored text)
+        # legend[1] – shift layer, prominent (larger, bold, darker blue)
         if len(legend) > 1 and legend[1]:
             shift_char = legend[1]
             sx = cx + 5
-            sy = base_y + 10  # closer to top = more margin from base character
+            sy = base_y + 8  # closer to top to avoid overlap
             elems.append(
                 f'<text x="{sx}" y="{sy}" '
                 f'text-anchor="start" dominant-baseline="central" '
-                f'font-family="sans-serif" font-size="14" '
+                f'font-family="sans-serif" font-size="16" font-weight="bold" '
                 f'fill="#0066cc">{_xml_esc(shift_char)}</text>'
             )
 
-        # legend[2] – ☆゛ layer, larger, top-right (colored text)
+        # legend[2] – ☆゛ layer, subdued (smaller, lighter gray)
         if len(legend) > 2 and legend[2]:
             yaku_char = legend[2]
             yx = cx + kw - 5
-            yy = base_y + 10  # closer to top = more margin from base character
+            yy = base_y + 7  # smaller, can be closer to top
             elems.append(
                 f'<text x="{yx}" y="{yy}" '
                 f'text-anchor="end" dominant-baseline="central" '
-                f'font-family="sans-serif" font-size="12" '
-                f'fill="#8844cc">{_xml_esc(yaku_char)}</text>'
+                f'font-family="sans-serif" font-size="10" '
+                f'fill="#999999">{_xml_esc(yaku_char)}</text>'
             )
 
         # Advance cursor
