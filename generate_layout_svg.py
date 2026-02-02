@@ -111,9 +111,11 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
 
         # Key rectangle (uniform light gray, no finger-based coloring)
         fill = "#f5f5f5"
+        # Reduce opacity for keys without shift layers (punctuation, etc.)
+        opacity = 'fill-opacity="0.35"' if len(legend) == 1 else ''
         elems.append(
             f'<rect x="{cx}" y="{base_y}" width="{kw}" height="{KH}" '
-            f'rx="{R}" ry="{R}" fill="{fill}" stroke="#999999" stroke-width="1"/>'
+            f'rx="{R}" ry="{R}" fill="{fill}" {opacity} stroke="#999999" stroke-width="1"/>'
         )
 
         # --- legends ---
@@ -121,7 +123,7 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
         center_x = cx + kw / 2
         center_y = base_y + KH / 2
 
-        # legend[0] – base character, large, centred
+        # legend[0] – base character, large, centred, bold
         base_char = legend[0] if legend else ""
         if base_char:
             nch = len(base_char)
@@ -131,12 +133,14 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
                 fs_base = 13
             else:
                 fs_base = 20
+            # Lighter color for keys without shift layers
+            base_color = "#999999" if len(legend) == 1 else "#222222"
             # vertical centering: dominant-baseline="central" aligns the middle
             elems.append(
                 f'<text x="{center_x}" y="{center_y}" '
                 f'text-anchor="middle" dominant-baseline="central" '
-                f'font-family="sans-serif" font-size="{fs_base}" '
-                f'fill="#222222">{_xml_esc(base_char)}</text>'
+                f'font-family="sans-serif" font-size="{fs_base}" font-weight="bold" '
+                f'fill="{base_color}">{_xml_esc(base_char)}</text>'
             )
 
         # legend[1] – shift layer, prominent (larger, bold, darker blue)
