@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="915" height="297" style="background:#ffffff; font-family:sans-serif;">
+  <text x="457.5" y="44" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="#333333">新月配列 v1.1.0</text>
+  <rect x="101.5" y="50" width="53" height="53" rx="6" ry="6" fill="#f8c8dc" stroke="#999999" stroke-width="1"/>
+  <text x="128.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">そ</text>
+  <text x="105.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ゆ</text>
+  <text x="150.5" y="61" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぴょ</text>
+  <rect x="158.5" y="50" width="53" height="53" rx="6" ry="6" fill="#a8dcd5" stroke="#999999" stroke-width="1"/>
+  <text x="185.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">こ</text>
+  <text x="162.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ひ</text>
+  <text x="207.5" y="61" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">びょ</text>
+  <rect x="215.5" y="50" width="53" height="53" rx="6" ry="6" fill="#b5e8b5" stroke="#999999" stroke-width="1"/>
+  <text x="242.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">し</text>
+  <text x="219.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ほ</text>
+  <text x="264.5" y="61" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">じょ</text>
+  <rect x="272.5" y="50" width="53" height="53" rx="6" ry="6" fill="#ffe8a3" stroke="#999999" stroke-width="1"/>
+  <text x="299.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">て</text>
+  <text x="276.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ふ</text>
+  <text x="321.5" y="61" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぎょ</text>
+  <rect x="329.5" y="50" width="53" height="53" rx="6" ry="6" fill="#ffe8a3" stroke="#999999" stroke-width="1"/>
+  <text x="356.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">ょ</text>
+  <text x="333.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">め</text>
+  <text x="378.5" y="61" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">でぃ</text>
+  <rect x="386.5" y="50" width="53" height="53" rx="6" ry="6" fill="#d4c5f0" stroke="#999999" stroke-width="1"/>
+  <text x="413.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">つ</text>
+  <text x="390.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ぬ</text>
+  <rect x="443.5" y="50" width="53" height="53" rx="6" ry="6" fill="#d4c5f0" stroke="#999999" stroke-width="1"/>
+  <text x="470.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">ん</text>
+  <text x="447.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">え</text>
+  <rect x="500.5" y="50" width="53" height="53" rx="6" ry="6" fill="#a8d4f0" stroke="#999999" stroke-width="1"/>
+  <text x="527.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">い</text>
+  <text x="504.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">み</text>
+  <rect x="557.5" y="50" width="53" height="53" rx="6" ry="6" fill="#ffd4a3" stroke="#999999" stroke-width="1"/>
+  <text x="584.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">の</text>
+  <text x="561.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">や</text>
+  <rect x="614.5" y="50" width="53" height="53" rx="6" ry="6" fill="#c5e8d4" stroke="#999999" stroke-width="1"/>
+  <text x="641.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">り</text>
+  <text x="618.5" y="61" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ー</text>
+  <rect x="671.5" y="50" width="53" height="53" rx="6" ry="6" fill="#c5e8d4" stroke="#999999" stroke-width="1"/>
+  <text x="698.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">「</text>
+  <rect x="728.5" y="50" width="53" height="53" rx="6" ry="6" fill="#c5e8d4" stroke="#999999" stroke-width="1"/>
+  <text x="755.0" y="76.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">」</text>
+  <rect x="130.0" y="107" width="53" height="53" rx="6" ry="6" fill="#f8c8dc" stroke="#999999" stroke-width="1"/>
+  <text x="156.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">は</text>
+  <text x="134.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">あ</text>
+  <text x="179.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぴゅ</text>
+  <rect x="187.0" y="107" width="53" height="53" rx="6" ry="6" fill="#a8dcd5" stroke="#999999" stroke-width="1"/>
+  <text x="213.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">か</text>
+  <text x="191.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">を</text>
+  <text x="236.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">びゅ</text>
+  <rect x="244.0" y="107" width="53" height="53" rx="6" ry="6" fill="#b5e8b5" stroke="#999999" stroke-width="1"/>
+  <text x="270.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">★</text>
+  <text x="248.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ら</text>
+  <text x="293.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">じゅ</text>
+  <rect x="301.0" y="107" width="53" height="53" rx="6" ry="6" fill="#ffe8a3" stroke="#999999" stroke-width="1"/>
+  <text x="327.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">と</text>
+  <text x="305.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ち</text>
+  <text x="350.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぎゅ</text>
+  <rect x="358.0" y="107" width="53" height="53" rx="6" ry="6" fill="#ffe8a3" stroke="#999999" stroke-width="1"/>
+  <text x="384.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">た</text>
+  <text x="362.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">よ</text>
+  <text x="407.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">でゅ</text>
+  <rect x="415.0" y="107" width="53" height="53" rx="6" ry="6" fill="#d4c5f0" stroke="#999999" stroke-width="1"/>
+  <text x="441.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">く</text>
+  <text x="419.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ま</text>
+  <text x="464.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">みゃ</text>
+  <rect x="472.0" y="107" width="53" height="53" rx="6" ry="6" fill="#d4c5f0" stroke="#999999" stroke-width="1"/>
+  <text x="498.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">う</text>
+  <text x="476.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">お</text>
+  <text x="521.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">みゅ</text>
+  <rect x="529.0" y="107" width="53" height="53" rx="6" ry="6" fill="#a8d4f0" stroke="#999999" stroke-width="1"/>
+  <text x="555.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">☆</text>
+  <text x="533.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">も</text>
+  <text x="578.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">みょ</text>
+  <rect x="586.0" y="107" width="53" height="53" rx="6" ry="6" fill="#ffd4a3" stroke="#999999" stroke-width="1"/>
+  <text x="612.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#222222">゛゜小</text>
+  <text x="590.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">わ</text>
+  <text x="635.0" y="118" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">;</text>
+  <rect x="643.0" y="107" width="53" height="53" rx="6" ry="6" fill="#c5e8d4" stroke="#999999" stroke-width="1"/>
+  <text x="669.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">き</text>
+  <text x="647.0" y="118" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">れ</text>
+  <rect x="700.0" y="107" width="53" height="53" rx="6" ry="6" fill="#c5e8d4" stroke="#999999" stroke-width="1"/>
+  <text x="726.5" y="133.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">&apos;</text>
+  <rect x="172.75" y="164" width="53" height="53" rx="6" ry="6" fill="#f8c8dc" stroke="#999999" stroke-width="1"/>
+  <text x="199.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">す</text>
+  <text x="176.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ね</text>
+  <text x="221.75" y="175" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぴゃ</text>
+  <rect x="229.75" y="164" width="53" height="53" rx="6" ry="6" fill="#a8dcd5" stroke="#999999" stroke-width="1"/>
+  <text x="256.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">け</text>
+  <text x="233.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">へ</text>
+  <text x="278.75" y="175" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">びゃ</text>
+  <rect x="286.75" y="164" width="53" height="53" rx="6" ry="6" fill="#b5e8b5" stroke="#999999" stroke-width="1"/>
+  <text x="313.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">に</text>
+  <text x="290.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">せ</text>
+  <text x="335.75" y="175" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">じゃ</text>
+  <rect x="343.75" y="164" width="53" height="53" rx="6" ry="6" fill="#ffe8a3" stroke="#999999" stroke-width="1"/>
+  <text x="370.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">な</text>
+  <text x="347.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ゅ</text>
+  <text x="392.75" y="175" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぎゃ</text>
+  <rect x="400.75" y="164" width="53" height="53" rx="6" ry="6" fill="#ffe8a3" stroke="#999999" stroke-width="1"/>
+  <text x="427.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">さ</text>
+  <text x="404.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ゃ</text>
+  <text x="449.75" y="175" text-anchor="end" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#6633aa">ぢゃ</text>
+  <rect x="457.75" y="164" width="53" height="53" rx="6" ry="6" fill="#d4c5f0" stroke="#999999" stroke-width="1"/>
+  <text x="484.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">っ</text>
+  <text x="461.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">む</text>
+  <rect x="514.75" y="164" width="53" height="53" rx="6" ry="6" fill="#d4c5f0" stroke="#999999" stroke-width="1"/>
+  <text x="541.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">る</text>
+  <text x="518.75" y="175" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="9" fill="#0066cc">ろ</text>
+  <rect x="571.75" y="164" width="53" height="53" rx="6" ry="6" fill="#a8d4f0" stroke="#999999" stroke-width="1"/>
+  <text x="598.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">、</text>
+  <rect x="628.75" y="164" width="53" height="53" rx="6" ry="6" fill="#ffd4a3" stroke="#999999" stroke-width="1"/>
+  <text x="655.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">。</text>
+  <rect x="685.75" y="164" width="53" height="53" rx="6" ry="6" fill="#c5e8d4" stroke="#999999" stroke-width="1"/>
+  <text x="712.25" y="190.5" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="20" fill="#222222">・</text>
+  <rect x="16" y="243" width="24" height="18" rx="3" ry="3" fill="#eeeeee" stroke="#aaaaaa" stroke-width="0.75"/>
+  <text x="28.0" y="252.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="9" font-weight="bold" fill="#444444">単</text>
+  <text x="45" y="252.0" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="10" fill="#555555">そのまま打鍵</text>
+  <rect x="102.0" y="243" width="24" height="18" rx="3" ry="3" fill="#cce5ff" stroke="#aaaaaa" stroke-width="0.75"/>
+  <text x="114.0" y="252.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="9" font-weight="bold" fill="#444444">シフト</text>
+  <text x="131.0" y="252.0" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="10" fill="#555555">★ or ☆ の後に打鍵 (左上の小さな文字)</text>
+  <rect x="298.5" y="243" width="24" height="18" rx="3" ry="3" fill="#e2d9f3" stroke="#aaaaaa" stroke-width="0.75"/>
+  <text x="310.5" y="252.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="9" font-weight="bold" fill="#444444">拗音</text>
+  <text x="327.5" y="252.0" text-anchor="start" dominant-baseline="central" font-family="sans-serif" font-size="10" fill="#555555">☆゛ の後に打鍵 (右上の小さな文字)</text>
+</svg>

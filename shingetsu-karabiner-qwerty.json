@@ -1,5 +1,5 @@
 {
-  "description": "新月配列 v8.6 (ANSI) - 前置/後置シフト (QWERTY)",
+  "description": "新月配列 v1.1.0 (ANSI) - 前置/後置シフト (QWERTY)",
   "manipulators": [
     {
       "type": "basic",

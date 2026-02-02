@@ -1,6 +1,6 @@
 # 新月配列 (Shingetsu Layout)
 
-<img width="847" height="742" alt="image" src="https://github.com/user-attachments/assets/97a4e9fe-1185-4dd7-b79f-34eae9714fac" />
+![新月配列 v1.1.0](./shingetsu-layout.svg)
 
 
 **月配列2-263をベースとした、最小かつ最高効率のPCキーボード用かな配列**
