@@ -109,8 +109,8 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
             cx += size * U
             continue
 
-        # Key rectangle
-        fill = FINGER_COLORS.get(finger, DEFAULT_COLOR)
+        # Key rectangle (uniform light gray, no finger-based coloring)
+        fill = "#f5f5f5"
         elems.append(
             f'<rect x="{cx}" y="{base_y}" width="{kw}" height="{KH}" '
             f'rx="{R}" ry="{R}" fill="{fill}" stroke="#999999" stroke-width="1"/>'
@@ -139,11 +139,11 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
                 f'fill="#222222">{_xml_esc(base_char)}</text>'
             )
 
-        # legend[1] – shift layer, larger, top-left
+        # legend[1] – shift layer, larger, top-left (colored text)
         if len(legend) > 1 and legend[1]:
             shift_char = legend[1]
             sx = cx + 5
-            sy = base_y + 13
+            sy = base_y + 16  # increased margin from base character
             elems.append(
                 f'<text x="{sx}" y="{sy}" '
                 f'text-anchor="start" dominant-baseline="central" '
@@ -151,16 +151,16 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
                 f'fill="#0066cc">{_xml_esc(shift_char)}</text>'
             )
 
-        # legend[2] – ☆゛ layer, larger, top-right
+        # legend[2] – ☆゛ layer, larger, top-right (colored text)
         if len(legend) > 2 and legend[2]:
             yaku_char = legend[2]
             yx = cx + kw - 5
-            yy = base_y + 13
+            yy = base_y + 16  # increased margin from base character
             elems.append(
                 f'<text x="{yx}" y="{yy}" '
                 f'text-anchor="end" dominant-baseline="central" '
                 f'font-family="sans-serif" font-size="12" '
-                f'fill="#6633aa">{_xml_esc(yaku_char)}</text>'
+                f'fill="#8844cc">{_xml_esc(yaku_char)}</text>'
             )
 
         # Advance cursor
@@ -199,7 +199,7 @@ for (bg, label, desc) in leg_items:
     )
     # Advance: estimate text width (rough: ~6.5 px per char for font-size 10)
     desc_w = len(desc) * 6.5
-    lx += box_w + 5 + desc_w + 18   # spacing between legend groups
+    lx += box_w + 5 + desc_w + 35   # spacing between legend groups (increased margin)
 
 # ---------------------------------------------------------------------------
 # Assemble SVG
