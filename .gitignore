@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# 生成物
+layouts/generated*.json
+layouts/optimized*.json
+corpus/*.txt.tmp
+
+# 一時ファイル
+/tmp/
+*.log
+
+# エディタ
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+# Added by cargo
+
+/target
+
+# Rust build artifacts (rustc)
+/test_sample
