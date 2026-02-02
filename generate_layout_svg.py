@@ -21,16 +21,16 @@ STAGGER = [0, 0.25 * U, 0.5 * U]   # for rows index 1, 2, 3 → mapped to 0, 1, 
 # Modifier key IDs to skip (just advance x)
 MODIFIERS = {"tab", "caps", "shift", "shiftr", "enter", "backslash", "\\"}
 
-# Finger → pastel fill colour
+# Finger → pastel fill colour (lighter/paler)
 FINGER_COLORS = {
-    0: "#f8c8dc",   # pink
-    1: "#a8dcd5",   # teal
-    2: "#b5e8b5",   # green
-    3: "#ffe8a3",   # yellow
-    6: "#d4c5f0",   # purple
-    7: "#a8d4f0",   # blue
-    8: "#ffd4a3",   # orange
-    9: "#c5e8d4",   # mint
+    0: "#fce8f0",   # pink (lighter)
+    1: "#d8f0ed",   # teal (lighter)
+    2: "#e0f5e0",   # green (lighter)
+    3: "#fff5d0",   # yellow (lighter)
+    6: "#ebe0f8",   # purple (lighter)
+    7: "#d8ebf8",   # blue (lighter)
+    8: "#ffebd0",   # orange (lighter)
+    9: "#e0f5eb",   # mint (lighter)
 }
 DEFAULT_COLOR = "#e0e0e0"
 
@@ -139,27 +139,27 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
                 f'fill="#222222">{_xml_esc(base_char)}</text>'
             )
 
-        # legend[1] – shift layer, small, top-left
+        # legend[1] – shift layer, larger, top-left
         if len(legend) > 1 and legend[1]:
             shift_char = legend[1]
-            sx = cx + 4
-            sy = base_y + 11
+            sx = cx + 5
+            sy = base_y + 13
             elems.append(
                 f'<text x="{sx}" y="{sy}" '
                 f'text-anchor="start" dominant-baseline="central" '
-                f'font-family="sans-serif" font-size="9" '
+                f'font-family="sans-serif" font-size="14" '
                 f'fill="#0066cc">{_xml_esc(shift_char)}</text>'
             )
 
-        # legend[2] – ☆゛ layer, small, top-right
+        # legend[2] – ☆゛ layer, larger, top-right
         if len(legend) > 2 and legend[2]:
             yaku_char = legend[2]
-            yx = cx + kw - 4
-            yy = base_y + 11
+            yx = cx + kw - 5
+            yy = base_y + 13
             elems.append(
                 f'<text x="{yx}" y="{yy}" '
                 f'text-anchor="end" dominant-baseline="central" '
-                f'font-family="sans-serif" font-size="9" '
+                f'font-family="sans-serif" font-size="12" '
                 f'fill="#6633aa">{_xml_esc(yaku_char)}</text>'
             )
 
@@ -174,7 +174,7 @@ leg_items = [
     ("#e2d9f3", "拗音", "☆゛ の後に打鍵 (右上の小さな文字)"),
 ]
 
-lx = PAD   # running x for legend items
+lx = PAD + 8   # running x for legend items (increased left margin)
 for (bg, label, desc) in leg_items:
     # Small coloured box
     box_w = 24
