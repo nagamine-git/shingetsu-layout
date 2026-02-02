@@ -12,7 +12,7 @@ KW  = 53          # key width for 1u
 KH  = 53          # key height
 GAP = U - KW      # 4 px gap between keys
 PAD = 16          # outer padding
-TTL = 34          # title area height
+TTL = 44          # title area height (increased margin below title)
 R   = 6           # corner radius of key rect
 
 # Row stagger (ANSI)
@@ -143,7 +143,7 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
         if len(legend) > 1 and legend[1]:
             shift_char = legend[1]
             sx = cx + 5
-            sy = base_y + 16  # increased margin from base character
+            sy = base_y + 10  # closer to top = more margin from base character
             elems.append(
                 f'<text x="{sx}" y="{sy}" '
                 f'text-anchor="start" dominant-baseline="central" '
@@ -155,7 +155,7 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
         if len(legend) > 2 and legend[2]:
             yaku_char = legend[2]
             yx = cx + kw - 5
-            yy = base_y + 16  # increased margin from base character
+            yy = base_y + 10  # closer to top = more margin from base character
             elems.append(
                 f'<text x="{yx}" y="{yy}" '
                 f'text-anchor="end" dominant-baseline="central" '
