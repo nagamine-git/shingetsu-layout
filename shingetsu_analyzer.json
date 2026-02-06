@@ -113,7 +113,7 @@
     "そ": {"keys": ["q"], "shift":[], "type":"seq"},
 
     "た": {"keys": ["g"], "shift":[], "type":"seq"},
-    "ち": {"keys": ["f"], "shift":["k"], "type":"seq"},
+    "ち": {"keys": [";"], "shift":["d"], "type":"seq"},
     "つ": {"keys": ["y"], "shift":[], "type":"seq"},
     "て": {"keys": ["r"], "shift":[], "type":"seq"},
     "と": {"keys": ["f"], "shift":[], "type":"seq"},
