@@ -1,0 +1,26 @@
+# 新月配列 (Shingetsu Layout)
+
+> 月配列2-263をベースとした、最小かつ最高効率のPCキーボード用かな配列
+
+公式サイト: https://shingetsu-layout.com/
+リポジトリ: https://github.com/nagamine-git/shingetsu-layout
+
+## 概要
+
+新月配列は、スマホフリック入力の「濁音・半濁音・小文字を1キーに統合する」アイデアをPCキーボード配列に適用した日本語かな配列です。
+
+## 特徴
+
+- 月配列2-263ベースの前置シフト方式
+- 濁音（゛）・半濁音（゜）・小文字を1キーで入力可能
+- 3層構造（無シフト / シフト / 前置シフト）による効率的な打鍵
+
+## 対応環境
+
+- macOS: Karabiner Elements
+- Windows/Linux: hazkey
+- キーボードベース配列: QWERTY, Colemak
+
+## 詳細情報
+
+配列の詳細・導入ガイド・最新情報は公式サイトをご覧ください: https://shingetsu-layout.com/
