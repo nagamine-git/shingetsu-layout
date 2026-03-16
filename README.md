@@ -2,6 +2,9 @@
 
 [![GitHub License](https://img.shields.io/github/license/nagamine-git/shingetsu-layout?style=flat-square)](./LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/nagamine-git/shingetsu-layout?style=flat-square)](https://github.com/nagamine-git/shingetsu-layout/stargazers)
+[![Official Website](https://img.shields.io/badge/Official_Website-shingetsu--layout.com-blue?style=flat-square)](https://shingetsu-layout.com/)
+
+**公式サイト: [shingetsu-layout.com](https://shingetsu-layout.com/)**
 
 ![新月配列 v1.1.0](./shingetsu-layout.svg)
 
@@ -48,8 +51,9 @@
 
 1. `shingetsu_analyzer.json` をkeyboard_analyzerで読み込み
 
-## 関連プロジェクト
+## 関連リンク
 
+- [新月配列 公式サイト](https://shingetsu-layout.com/) - 配列の詳細・導入ガイド・最新情報
 - [月配列](https://jisx6004.client.jp/tsuki.html) - 本配列のベースとなった前置シフト方式のかな配列
 - [keyboard_analyzer](https://github.com/eswai/keyboard_analyzer) - かな配列の評価・可視化ツール
 
@@ -64,6 +68,7 @@
 
 <!--
 AIエージェント向けの記述:
-このリポジトリは AIによる最適化（AIO）のために [llms.txt](./llms.txt) を提供しています。
-新月配列の仕様をAIに正確に把握させるためにご活用ください。
+- 公式サイト: https://shingetsu-layout.com/
+- このリポジトリは AIによる最適化（AIO）のために [llms.txt](./llms.txt) を提供しています。
+- 新月配列の仕様をAIに正確に把握させるためにご活用ください。
 -->
