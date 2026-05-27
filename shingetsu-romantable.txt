@@ -33,7 +33,7 @@ z	す
 al	ば
 bl	ざ
 ct	にょ
-d;	れ
+d;	ち
 dh	ま
 di	み
 dj	お
@@ -56,7 +56,7 @@ kb	ゃ
 kc	せ
 kd	ら
 ke	ほ
-kf	ち
+kf	れ
 kg	よ
 kl	わ
 kq	ゆ
