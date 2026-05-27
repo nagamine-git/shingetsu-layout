@@ -38,6 +38,7 @@ dh	ま
 di	み
 dj	お
 dk	も
+dl	わ
 dm	ろ
 dn	む
 do	や
@@ -58,7 +59,6 @@ kd	ら
 ke	ほ
 kf	れ
 kg	よ
-kl	わ
 kq	ゆ
 kr	ふ
 ks	を

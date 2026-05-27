@@ -146,7 +146,7 @@
     "れ": {"keys": ["f"], "shift":["k"], "type":"seq"},
     "ろ": {"keys": ["m"], "shift":["d"], "type":"seq"},
 
-    "わ": {"keys": ["l"], "shift":["k"], "type":"seq"},
+    "わ": {"keys": ["l"], "shift":["d"], "type":"seq"},
     "を": {"keys": ["s"], "shift":["k"], "type":"seq"},
     "ん": {"keys": ["u"], "shift":[], "type":"seq"},
 
