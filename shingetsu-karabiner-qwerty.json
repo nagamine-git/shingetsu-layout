@@ -3197,7 +3197,7 @@
         {
           "set_variable": {
             "name": "last_char",
-            "value": 0
+            "value": 151
           }
         },
         {
@@ -5729,6 +5729,222 @@
         {
           "set_variable": {
             "name": "shift_state",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "last_char",
+          "value": 117
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "l",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "delete_or_backspace"
+        },
+        {
+          "key_code": "x"
+        },
+        {
+          "key_code": "y"
+        },
+        {
+          "key_code": "a"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "last_char",
+          "value": 101
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "l",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "delete_or_backspace"
+        },
+        {
+          "key_code": "x"
+        },
+        {
+          "key_code": "y"
+        },
+        {
+          "key_code": "u"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "last_char",
+          "value": 126
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "l",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "delete_or_backspace"
+        },
+        {
+          "key_code": "x"
+        },
+        {
+          "key_code": "y"
+        },
+        {
+          "key_code": "o"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
+            "value": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "basic",
+      "conditions": [
+        {
+          "type": "variable_if",
+          "name": "last_char",
+          "value": 151
+        },
+        {
+          "input_sources": [
+            {
+              "language": "ja"
+            }
+          ],
+          "type": "input_source_if"
+        },
+        {
+          "input_sources": [
+            {
+              "input_mode_id": "Roman$"
+            }
+          ],
+          "type": "input_source_unless"
+        }
+      ],
+      "from": {
+        "key_code": "l",
+        "modifiers": {
+          "optional": [
+            "caps_lock"
+          ]
+        }
+      },
+      "to": [
+        {
+          "key_code": "delete_or_backspace"
+        },
+        {
+          "key_code": "x"
+        },
+        {
+          "key_code": "w"
+        },
+        {
+          "key_code": "a"
+        },
+        {
+          "set_variable": {
+            "name": "last_char",
             "value": 0
           }
         }
