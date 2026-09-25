@@ -8,7 +8,7 @@
 
 ![新月配列 v1.1.0](./shingetsu-layout.svg)
 
-**月配列2-263をベースとした、最小かつ最高効率のPCキーボード用かな配列**
+**月配列2-263をベースに、濁音・半濁音・小書きを「清音 + ゛」の後置に統合したかな配列。標準 US（ANSI）キーボードの英字 3 行 30 キーで動き、同時押しを使いません。**
 
 スマホフリック入力の「濁音・半濁音・小文字を1キーに統合する」というアイデアを着想として、PCキーボード配列に適用。
 
@@ -16,7 +16,7 @@
 
 - **月配列2-263ベース**: 実績ある月配列の前置シフト方式を継承
 - **1キー統合**: 濁音（゛）・半濁音（゜）・小文字を1キーで入力可能（スマホフリック入力の着想）
-- **最小打鍵数**: 効率的な配列設計による打鍵数の最小化
+- **打鍵数**: かな 1 文字あたり 1.34 打（青空文庫『こころ』『坊っちゃん』30.7 万かなで集計。同じ文章のローマ字入力は 1.75 打。[集計スクリプト](https://github.com/nagamine-git/shingetsu-layout-site/tree/main/scripts/key-heat)）
 - **3段階の規則**: 無シフト（1打）/ ☆ or ★ の前置シフト（2打）/ 濁音・半濁音・小書きは「清音 + ゛」の後置（清音の打鍵数 +1、半濁音は +2）
 
 ## 配列構造
@@ -36,6 +36,7 @@
 | `shingetsu-ansi-qwerty.tsv` | hazkey用ローマ字テーブル（QWERTY配列） |
 | `shingetsu-ansi-colemak.tsv` | hazkey用ローマ字テーブル（Colemak配列） |
 | `shingetsu-karabiner-qwerty.json` | Karabiner Elements用設定ファイル |
+| `shingetsu-romantable.txt` | Google 日本語入力用ローマ字テーブル（`generate_romantable.py` で生成） |
 
 ## インストール方法
 
@@ -44,7 +45,13 @@
 1. `shingetsu-karabiner-qwerty.json` を開く
 2. Karabiner Elementsの設定にインポート
 
-### hazkey（Windows/Linux）
+### Google 日本語入力（Windows / macOS）
+
+1. 現在のローマ字テーブルをエクスポートして保存する（元に戻すため）
+2. `shingetsu-romantable.txt` を、Google 日本語入力のプロパティ →「ローマ字テーブル」→「編集」→「インポート」で読み込む
+3. 入力方法は「ローマ字入力」のまま使う。Windows 実機での動作は未検証のため、うまく入力できない場合は保存したテーブルに戻す
+
+### hazkey（Linux / Fcitx 5）
 
 1. `shingetsu-ansi-qwerty.tsv` または `shingetsu-ansi-colemak.tsv` をhazkeyの設定にインポート
 
