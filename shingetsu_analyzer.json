@@ -155,11 +155,11 @@
     "ゃ": {"keys": ["b"], "shift":["k"], "type":"seq"},
     "ゅ": {"keys": ["v"], "shift":["k"], "type":"seq"},
 
-    "ぁ": {"keys": ["a", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぁ": {"keys": ["k", "a", "l"], "shift":[], "type":"seq", "ime": true},
     "ぃ": {"keys": ["i", "l"], "shift":[], "type":"seq", "ime": true},
     "ぅ": {"keys": ["j", "l", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぇ": {"keys": ["u", "d", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぉ": {"keys": ["j", "d", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぇ": {"keys": ["d", "u", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぉ": {"keys": ["d", "j", "l"], "shift":[], "type":"seq", "ime": true},
 
     "が": {"keys": ["s", "l"], "shift":[], "type":"seq", "ime": true},
     "ぎ": {"keys": [";", "l"], "shift":[], "type":"seq", "ime": true},
@@ -170,55 +170,55 @@
     "ざ": {"keys": ["b", "l"], "shift":[], "type":"seq", "ime": true},
     "じ": {"keys": ["e", "l"], "shift":[], "type":"seq", "ime": true},
     "ず": {"keys": ["z", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぜ": {"keys": ["c", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぜ": {"keys": ["k", "c", "l"], "shift":[], "type":"seq", "ime": true},
     "ぞ": {"keys": ["q", "l"], "shift":[], "type":"seq", "ime": true},
 
     "だ": {"keys": ["g", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぢ": {"keys": ["f", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぢ": {"keys": ["d", ";", "l"], "shift":[], "type":"seq", "ime": true},
     "づ": {"keys": ["y", "l"], "shift":[], "type":"seq", "ime": true},
     "で": {"keys": ["r", "l"], "shift":[], "type":"seq", "ime": true},
     "ど": {"keys": ["f", "l"], "shift":[], "type":"seq", "ime": true},
 
     "ば": {"keys": ["a", "l"], "shift":[], "type":"seq", "ime": true},
-    "び": {"keys": ["w", "k", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぶ": {"keys": ["r", "k", "l"], "shift":[], "type":"seq", "ime": true},
-    "べ": {"keys": ["x", "k", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぼ": {"keys": ["e", "k", "l"], "shift":[], "type":"seq", "ime": true},
+    "び": {"keys": ["k", "w", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぶ": {"keys": ["k", "r", "l"], "shift":[], "type":"seq", "ime": true},
+    "べ": {"keys": ["k", "x", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぼ": {"keys": ["k", "e", "l"], "shift":[], "type":"seq", "ime": true},
 
     "ぱ": {"keys": ["a", "l", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぴ": {"keys": ["w", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぷ": {"keys": ["r", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぺ": {"keys": ["x", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
-    "ぽ": {"keys": ["e", "k", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぴ": {"keys": ["k", "w", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぷ": {"keys": ["k", "r", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぺ": {"keys": ["k", "x", "l", "l"], "shift":[], "type":"seq", "ime": true},
+    "ぽ": {"keys": ["k", "e", "l", "l"], "shift":[], "type":"seq", "ime": true},
 
     "ゔ": {"keys": ["j", "l"], "shift":[], "type":"seq", "ime": true},
 
-    "きゃ": {"keys": [";", "b", "k"], "shift":[], "type":"seq", "ime": true},
-    "きゅ": {"keys": [";", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "きゃ": {"keys": [";", "k", "b"], "shift":[], "type":"seq", "ime": true},
+    "きゅ": {"keys": [";", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "きょ": {"keys": [";", "t"], "shift":[], "type":"seq", "ime": true},
 
-    "しゃ": {"keys": ["e", "b", "k"], "shift":[], "type":"seq", "ime": true},
-    "しゅ": {"keys": ["e", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "しゃ": {"keys": ["e", "k", "b"], "shift":[], "type":"seq", "ime": true},
+    "しゅ": {"keys": ["e", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "しょ": {"keys": ["e", "t"], "shift":[], "type":"seq", "ime": true},
 
-    "ちゃ": {"keys": ["f", "k", "b", "k"], "shift":[], "type":"seq", "ime": true},
-    "ちゅ": {"keys": ["f", "k", "v", "k"], "shift":[], "type":"seq", "ime": true},
-    "ちょ": {"keys": ["f", "k", "t"], "shift":[], "type":"seq", "ime": true},
+    "ちゃ": {"keys": ["d", ";", "k", "b"], "shift":[], "type":"seq", "ime": true},
+    "ちゅ": {"keys": ["d", ";", "k", "v"], "shift":[], "type":"seq", "ime": true},
+    "ちょ": {"keys": ["d", ";", "t"], "shift":[], "type":"seq", "ime": true},
 
-    "にゃ": {"keys": ["c", "b", "k"], "shift":[], "type":"seq", "ime": true},
-    "にゅ": {"keys": ["c", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "にゃ": {"keys": ["c", "k", "b"], "shift":[], "type":"seq", "ime": true},
+    "にゅ": {"keys": ["c", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "にょ": {"keys": ["c", "t"], "shift":[], "type":"seq", "ime": true},
 
-    "ひゃ": {"keys": ["w", "k", "b", "k"], "shift":[], "type":"seq", "ime": true},
-    "ひゅ": {"keys": ["w", "k", "v", "k"], "shift":[], "type":"seq", "ime": true},
-    "ひょ": {"keys": ["w", "k", "t"], "shift":[], "type":"seq", "ime": true},
+    "ひゃ": {"keys": ["k", "w", "k", "b"], "shift":[], "type":"seq", "ime": true},
+    "ひゅ": {"keys": ["k", "w", "k", "v"], "shift":[], "type":"seq", "ime": true},
+    "ひょ": {"keys": ["k", "w", "t"], "shift":[], "type":"seq", "ime": true},
 
     "みゃ": {"keys": ["h"], "shift":["d", "l"], "type":"seq", "ime": true},
     "みゅ": {"keys": ["j"], "shift":["d", "l"], "type":"seq", "ime": true},
     "みょ": {"keys": ["k"], "shift":["d", "l"], "type":"seq", "ime": true},
 
-    "りゃ": {"keys": ["p", "b", "k"], "shift":[], "type":"seq", "ime": true},
-    "りゅ": {"keys": ["p", "v", "k"], "shift":[], "type":"seq", "ime": true},
+    "りゃ": {"keys": ["p", "k", "b"], "shift":[], "type":"seq", "ime": true},
+    "りゅ": {"keys": ["p", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "りょ": {"keys": ["p", "t"], "shift":[], "type":"seq", "ime": true},
 
     "ぎゃ": {"keys": ["v"], "shift":["k", "l"], "type":"seq", "ime": true},
@@ -230,8 +230,8 @@
     "じょ": {"keys": ["e"], "shift":["k", "l"], "type":"seq", "ime": true},
 
     "ぢゃ": {"keys": ["b"], "shift":["k", "l"], "type":"seq", "ime": true},
-    "ぢゅ": {"keys": ["f", "k", "l", "v", "k"], "shift":[], "type":"seq", "ime": true},
-    "ぢょ": {"keys": ["f", "k", "l", "t"], "shift":[], "type":"seq", "ime": true},
+    "ぢゅ": {"keys": ["d", ";", "l", "k", "v"], "shift":[], "type":"seq", "ime": true},
+    "ぢょ": {"keys": ["d", ";", "l", "t"], "shift":[], "type":"seq", "ime": true},
 
     "びゃ": {"keys": ["x"], "shift":["k", "l"], "type":"seq", "ime": true},
     "びゅ": {"keys": ["s"], "shift":["k", "l"], "type":"seq", "ime": true},
@@ -243,7 +243,7 @@
 
     "でゅ": {"keys": ["g"], "shift":["k", "l"], "type":"seq", "ime": true},
     "でぃ": {"keys": ["t"], "shift":["k", "l"], "type":"seq", "ime": true},
-    "でゃ": {"keys": ["r", "l", "b", "k"], "shift":[], "type":"seq", "ime": true},
+    "でゃ": {"keys": ["r", "l", "k", "b"], "shift":[], "type":"seq", "ime": true},
     "でょ": {"keys": ["r", "l", "t"], "shift":[], "type":"seq", "ime": true},
 
     ";": {"keys": ["l"], "shift":["k", "l"], "type":"seq"}
