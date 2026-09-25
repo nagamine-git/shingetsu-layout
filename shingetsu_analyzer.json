@@ -160,6 +160,7 @@
     "ぅ": {"keys": ["j", "l", "l"], "shift":[], "type":"seq", "ime": true},
     "ぇ": {"keys": ["d", "u", "l"], "shift":[], "type":"seq", "ime": true},
     "ぉ": {"keys": ["d", "j", "l"], "shift":[], "type":"seq", "ime": true},
+    "ゎ": {"keys": ["l", "l"], "shift": ["d"], "type":"seq", "ime": true},
 
     "が": {"keys": ["s", "l"], "shift":[], "type":"seq", "ime": true},
     "ぎ": {"keys": [";", "l"], "shift":[], "type":"seq", "ime": true},

@@ -19,6 +19,14 @@ def main():
         input_seq = "".join(shift) + "".join(keys)
         lines.append((input_seq, char))
 
+    # 小書き ゃ/ゅ/ょ は専用キーのほかに「親文字 + ゛」でも打てるようにする（ぁぃぅぇぉ・ゎ と同じ規則）
+    dakuten = "".join(data["conversion"]["゛"]["keys"])
+    seq_of = {char: inp for inp, char in lines}
+    for small, parent in {"ゃ": "や", "ゅ": "ゆ", "ょ": "よ"}.items():
+        alias = seq_of[parent] + dakuten
+        if alias not in seq_of.values():
+            lines.append((alias, small))
+
     lines.sort(key=lambda x: (len(x[0]), x[0]))
 
     with open("shingetsu-romantable.txt", "w") as f:

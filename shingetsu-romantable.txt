@@ -87,6 +87,8 @@ djl	ぉ
 dlh	みゃ
 dlj	みゅ
 dlk	みょ
+dll	ゎ
+dol	ゃ
 dul	ぇ
 ekb	しゃ
 ekv	しゅ
@@ -94,6 +96,7 @@ jll	ぅ
 kal	ぁ
 kcl	ぜ
 kel	ぼ
+kgl	ょ
 kla	ぴゅ
 klb	ぢゃ
 klc	じゃ
@@ -110,6 +113,7 @@ klv	ぎゃ
 klw	びょ
 klx	びゃ
 klz	ぴゃ
+kql	ゅ
 krl	ぶ
 kwl	び
 kwt	ひょ
