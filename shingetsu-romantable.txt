@@ -84,9 +84,6 @@ ckv	にゅ
 d;l	ぢ
 d;t	ちょ
 djl	ぉ
-dlh	みゃ
-dlj	みゅ
-dlk	みょ
 dll	ゎ
 dol	ゃ
 dul	ぇ
@@ -104,6 +101,9 @@ kld	じゅ
 kle	じょ
 klf	ぎゅ
 klg	でゅ
+klh	みゃ
+klj	みゅ
+klk	みょ
 kll	;
 klq	ぴょ
 klr	ぎょ
