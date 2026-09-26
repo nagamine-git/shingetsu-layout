@@ -28,20 +28,40 @@ IME_DEFAULT_ONLY = {"/"}
 
 FONT = "'Hiragino Sans', 'BIZ UDPGothic', 'Noto Sans CJK JP', sans-serif"
 
-# ゛ drawn as a path: the standalone U+309B glyph sits in a corner of its em box
-# and its position differs per font, so text rendering leaves it tiny and
-# off-centre. Outline taken from BIZ UDPGothic Bold (SIL OFL 1.1), font units.
-DAKUTEN_PATH = ("M215 1282Q150 1445 16 1638L168 1694Q286 1530 368 1343Z"
-                "M467 1370Q396 1551 270 1729L415 1778Q530 1638 612 1438Z")
-DAKUTEN_BOX = (16, 1282, 612, 1778)   # xmin, ymin, xmax, ymax
+# ゛ and ゜ drawn as paths: the standalone U+309B/U+309C glyphs sit in a corner
+# of their em box and the position differs per font, so as text they come out
+# tiny and off-centre. Outlines from BIZ UDPGothic Bold (SIL OFL 1.1), font units.
+MARK_PATHS = {
+    "゛": ("M215 1282Q150 1445 16 1638L168 1694Q286 1530 368 1343Z"
+          "M467 1370Q396 1551 270 1729L415 1778Q530 1638 612 1438Z",
+          (16, 1282, 612, 1778)),
+    "゜": ("M273 1782Q340 1782 401 1745Q461 1710 494 1647Q524 1591 524 1530"
+          "Q524 1432 454 1357Q380 1278 271 1278Q217 1278 167 1301Q105 1330 66 1386"
+          "Q20 1452 20 1531Q20 1585 44 1636Q95 1743 208 1773Q241 1782 273 1782Z"
+          "M272 1659Q235 1659 202 1638Q143 1601 143 1529Q143 1478 178 1441"
+          "Q216 1401 272 1401Q304 1401 331 1415Q401 1451 401 1529Q401 1584 362 1622"
+          "Q326 1659 272 1659Z",
+          (20, 1278, 524, 1782)),
+}
 
 
-def dakuten(cx, cy, height, colour):
-    """Return a ゛ centred on (cx, cy) that is `height` px tall."""
-    x0, y0, x1, y1 = DAKUTEN_BOX
+def mark(ch, cx, cy, height, colour):
+    """Return ゛ or ゜ centred on (cx, cy), `height` px tall."""
+    d, (x0, y0, x1, y1) = MARK_PATHS[ch]
     k = height / (y1 - y0)
-    return (f'<path d="{DAKUTEN_PATH}" fill="{colour}" transform="translate({cx:.1f} {cy:.1f}) '
+    return (f'<path d="{d}" fill="{colour}" transform="translate({cx:.1f} {cy:.1f}) '
             f'scale({k:.5f} {-k:.5f}) translate({-(x0 + x1) / 2} {-(y0 + y1) / 2})"/>')
+
+
+def dakuten_legend(cx, cy, scale, colour):
+    """The ゛ key legend 「゛゜小」 centred on (cx, cy); scale 1 = key size."""
+    return "".join([
+        mark("゛", cx - 14 * scale, cy - 2 * scale, 10.5 * scale, colour),
+        mark("゜", cx - 1 * scale, cy - 2 * scale, 8.5 * scale, colour),
+        f'<text x="{cx + 13 * scale:.1f}" y="{cy:.1f}" text-anchor="middle" '
+        f'dominant-baseline="central" font-family="{FONT}" font-size="{14 * scale:.1f}" '
+        f'font-weight="bold" fill="{colour}">小</text>',
+    ])
 
 
 # Text colours: one per layer, reused by the legend so the two always match
@@ -171,8 +191,8 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
         # legend[0] – base character, large, centred, bold
         base_char = legend[0] if legend else ""
         if base_char.startswith("゛"):
-            # 濁点キー (゛ / ゛゛ = ゜ / 小書き): one mark, explained in the legend
-            elems.append(dakuten(center_x, center_y + 5, 14, INK_BASE))
+            # 濁点キー: 「゛゜小」 (濁音 / 半濁音 = ゛゛ / 小書き)
+            elems.append(dakuten_legend(center_x, center_y + 2, 1, INK_BASE))
         elif base_char:
             nch = len(base_char)
             if nch >= 3:
@@ -266,7 +286,7 @@ elems.append(
     f'<rect x="{PAD}" y="{ly2}" width="{BOX}" height="{BOX}" '
     f'rx="4" ry="4" fill="#f5f5f5" stroke="#b5b5b5" stroke-width="0.75"/>'
 )
-elems.append(dakuten(PAD + BOX / 2, ly2 + BOX / 2, 10, INK_BASE))
+elems.append(dakuten_legend(PAD + BOX / 2, ly2 + BOX / 2, 0.5, INK_BASE))
 elems.append(
     f'<text x="{PAD + BOX + 7}" y="{ly2 + BOX / 2}" '
     f'text-anchor="start" dominant-baseline="central" '
