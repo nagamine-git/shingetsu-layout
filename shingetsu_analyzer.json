@@ -1,6 +1,6 @@
 {
   "name": "新月配列 v9.0 (ANSI)",
-  "remark": "前置シフト(★/☆) + 後置シフト(゛゜小)方式。Spaceキーでー(シフトで！)",
+  "remark": "前置シフト(★/☆) + 後置シフト(゛゜小)方式。ーは★p（TSV・romantableでは - キーでも）、！は★゛+Space（analyzerだけの定義）",
   "keys": [
     [
       {"id": "zkhk"  , "legend": ["全角"]      , "size": 1,    "finger": 0},
@@ -67,7 +67,7 @@
       {"id": "ctrl"  , "legend": ["Ctrl"]      , "size": 1.25, "finger": 0},
       {"id": "win"   , "legend": ["Win"]       , "size": 1.25, "finger": 0},
       {"id": "alt"   , "legend": ["Alt"]       , "size": 1.25, "finger": 0},
-      {"id": "space" , "legend": ["Space", "ー", "！"]    , "size": 6.25, "finger": 4, "home": true},
+      {"id": "space" , "legend": ["Space", "", "！"]      , "size": 6.25, "finger": 4, "home": true},
       {"id": "altr"  , "legend": ["Alt"]       , "size": 1.25, "finger": 8},
       {"id": "winr"  , "legend": ["Win"]       , "size": 1.25, "finger": 9},
       {"id": "app"   , "legend": ["App"]       , "size": 1.25, "finger": 9},

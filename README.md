@@ -73,6 +73,8 @@
 | `shingetsu-ansi-colemak.tsv` | hazkey用ローマ字テーブル（Colemak配列） |
 | `shingetsu-karabiner-qwerty.json` | Karabiner Elements用設定ファイル |
 | `shingetsu-romantable.txt` | Google 日本語入力用ローマ字テーブル（`generate_romantable.py` で生成） |
+| `shingetsu-layout.svg` | 配列図（`generate_layout_svg.py` で生成） |
+| `shingetsu-social-preview.png` | GitHub の Social preview 用画像（1280×640）。`python3 generate_layout_svg.py && ./generate_social_preview.sh` で配列図から作る（rsvg-convert と ImageMagick が要る） |
 
 ## インストール方法
 
@@ -80,6 +82,12 @@
 
 1. `shingetsu-karabiner-qwerty.json` を開く
 2. Karabiner Elementsの設定にインポート
+
+挙動と制約:
+
+- ☆・★・☆゛ の状態と「直前に打った かな」は、Karabiner の内部に覚えています。BackSpace・Enter・Space・Tab・Esc・矢印・Home/End・PageUp/PageDown・前方削除・数字や記号のキー・マウスのクリック・Eisu/Kana のどれかを押す（Cmd や Ctrl との組み合わせも）と、この記憶は消えます。キー自体はそのまま通ります。F キー・Caps Lock・修飾キーだけの操作では消えません
+- ☆・★・☆゛ の後に、その組み合わせが割り当てられていないキーを打つと、☆ などは取り消され、そのキーは単打として打たれます（TSV の「☆ の後にそのキーの かな が続く」と同じ結果で、☆ の記号が残らないだけです）
+- ゛ は、直前に打った かな に付けるときだけ働きます。macOS の日本語入力には ゛ を単独で出す入力が無い（[Apple の対応表](https://support.apple.com/ja-jp/guide/japanese-input-method/jpim10277/6.3/mac/15.3)にも載っていない）ため、単独の ゛と、これ以上 ゛ を付けられない かな（め・ん・が・ぱ など）の後の ゛ は何も入力されません。゛ そのものが必要なときは、記号の読みを入力して変換します
 
 ### Google 日本語入力（Windows / macOS）
 
