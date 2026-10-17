@@ -1,4 +1,5 @@
 ,	、
+-	ー
 .	。
 /	・
 ;	き
@@ -28,12 +29,15 @@ w	こ
 x	け
 y	つ
 z	す
+;k	き	k
 ;l	ぎ
 ;t	きょ
 al	ば
 bl	ざ
+ck	に	k
 ct	にょ
 d;	ち
+dd	ら
 dh	ま
 di	み
 dj	お
@@ -45,6 +49,7 @@ do	や
 dp	ー
 du	え
 dy	ぬ
+ek	し	k
 el	じ
 et	しょ
 fl	ど
@@ -59,6 +64,7 @@ kd	ら
 ke	ほ
 kf	れ
 kg	よ
+kk	も
 kq	ゆ
 kr	ふ
 ks	を
@@ -68,6 +74,7 @@ kw	ひ
 kx	へ
 kz	ね
 ll	゜
+pk	り	k
 pt	りょ
 ql	ぞ
 rl	で
@@ -82,7 +89,6 @@ all	ぱ
 ckb	にゃ
 ckv	にゅ
 d;l	ぢ
-d;t	ちょ
 djl	ぉ
 dll	ゎ
 dol	ゃ
@@ -94,35 +100,36 @@ kal	ぁ
 kcl	ぜ
 kel	ぼ
 kgl	ょ
+kl,	みゃ
+kl/	ちゃ
+kl;	ちゅ
 kla	ぴゅ
-klb	ぢゃ
 klc	じゃ
 kld	じゅ
 kle	じょ
 klf	ぎゅ
-klg	でゅ
-klh	みゃ
-klj	みゅ
-klk	みょ
-kll	;
+kli	みょ
+klk	みゅ
+klp	ちょ
 klq	ぴょ
 klr	ぎょ
 kls	びゅ
-klt	でぃ
 klv	ぎゃ
 klw	びょ
 klx	びゃ
 klz	ぴゃ
 kql	ゅ
 krl	ぶ
+kwk	ひ	k
 kwl	び
 kwt	ひょ
 kxl	べ
 pkb	りゃ
 pkv	りゅ
+rli	でい
+rlk	で	k
 rlt	でょ
-d;kb	ちゃ
-d;kv	ちゅ
+d;lk	ぢ	k
 d;lt	ぢょ
 kell	ぽ
 krll	ぷ
@@ -130,5 +137,8 @@ kwkb	ひゃ
 kwkv	ひゅ
 kwll	ぴ
 kxll	ぺ
+rlil	でぃ
 rlkb	でゃ
+rlkv	でゅ
+d;lkb	ぢゃ
 d;lkv	ぢゅ

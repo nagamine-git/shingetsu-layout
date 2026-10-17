@@ -21,8 +21,9 @@ STAGGER = [0, 0.25 * U, 0.5 * U]   # for rows index 1, 2, 3 → mapped to 0, 1, 
 # Modifier key IDs to skip (just advance x)
 MODIFIERS = {"tab", "caps", "shift", "shiftr", "enter", "backslash", "\\"}
 
-# The layout lives entirely on these 30 keys. 「」 ([ ]) and ' are outside it,
-# and / only carries the IME default ・, so they are not drawn / labelled.
+# The layout lives entirely on these 30 keys. 「」 ([ ]) and ' are outside it, so they are
+# not drawn / labelled. On / the base character is only the IME default ・, so it is not
+# drawn either (the ☆゛ entry of that key still is).
 THIRTY_KEYS = set("qwertyuiopasdfghjkl;zxcvbnm,./")
 IME_DEFAULT_ONLY = {"/"}
 
@@ -147,7 +148,7 @@ title_y = PAD + 26   # baseline
 elems.append(
     f'<text x="{title_x}" y="{title_y}" font-family="{FONT}" font-size="22" '
     f'font-weight="bold" fill="{INK_BASE}">新月配列'
-    f'<tspan dx="10" font-size="13" font-weight="normal" fill="{INK_MUTED}">v1.1.0</tspan></text>'
+    f'<tspan dx="10" font-size="13" font-weight="normal" fill="{INK_MUTED}">v2.0.0</tspan></text>'
 )
 
 # --- key rows ---
@@ -172,7 +173,7 @@ for row_seq, row_idx in enumerate([1, 2, 3]):
         if key_id not in THIRTY_KEYS:
             continue
         if key_id in IME_DEFAULT_ONLY:
-            legend = [""]
+            legend = [""] + legend[1:]
 
         # Key rectangle (uniform light gray, no finger-based coloring)
         fill = "#f5f5f5"

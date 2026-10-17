@@ -1,5 +1,5 @@
 {
-  "name": "新月配列 v8.6 (ANSI)",
+  "name": "新月配列 v9.0 (ANSI)",
   "remark": "前置シフト(★/☆) + 後置シフト(゛゜小)方式。Spaceキーでー(シフトで！)",
   "keys": [
     [
@@ -24,12 +24,12 @@
       {"id": "w"     , "legend": ["こ", "ひ", "びょ"]     , "size": 1,    "finger": 1},
       {"id": "e"     , "legend": ["し", "ほ", "じょ"]     , "size": 1,    "finger": 2},
       {"id": "r"     , "legend": ["て", "ふ", "ぎょ"]     , "size": 1,    "finger": 3},
-      {"id": "t"     , "legend": ["ょ", "め", "でぃ"]      , "size": 1,    "finger": 3},
+      {"id": "t"     , "legend": ["ょ", "め"]             , "size": 1,    "finger": 3},
       {"id": "y"     , "legend": ["つ", "ぬ"]             , "size": 1,    "finger": 6},
       {"id": "u"     , "legend": ["ん", "え"]             , "size": 1,    "finger": 6},
-      {"id": "i"     , "legend": ["い", "み"]             , "size": 1,    "finger": 7},
+      {"id": "i"     , "legend": ["い", "み", "みょ"]     , "size": 1,    "finger": 7},
       {"id": "o"     , "legend": ["の", "や"]             , "size": 1,    "finger": 8},
-      {"id": "p"     , "legend": ["り", "ー"]              , "size": 1,    "finger": 9},
+      {"id": "p"     , "legend": ["り", "ー", "ちょ"]     , "size": 1,    "finger": 9},
       {"id": "["     , "legend": ["「"]                   , "size": 1,    "finger": 9},
       {"id": "]"     , "legend": ["」"]                   , "size": 1,    "finger": 9},
       {"id": "\\"    , "legend": ["\\"]        , "size": 1.5, "finger": 9}
@@ -40,12 +40,12 @@
       {"id": "s"     , "legend": ["か", "を", "びゅ"]     , "size": 1,    "finger": 1, "home": true},
       {"id": "d"     , "legend": ["★", "ら", "じゅ"]     , "size": 1,    "finger": 2, "home": true},
       {"id": "f"     , "legend": ["と", "れ", "ぎゅ"]     , "size": 1,    "finger": 3, "home": true},
-      {"id": "g"     , "legend": ["た", "よ", "でゅ"]     , "size": 1,    "finger": 3},
-      {"id": "h"     , "legend": ["く", "ま", "みゃ"]     , "size": 1,    "finger": 6},
-      {"id": "j"     , "legend": ["う", "お", "みゅ"]     , "size": 1,    "finger": 6, "home": true},
-      {"id": "k"     , "legend": ["☆", "も", "みょ"]     , "size": 1,    "finger": 7, "home": true},
-      {"id": "l"     , "legend": ["゛゜小", "わ", ";"]    , "size": 1,    "finger": 8, "home": true},
-      {"id": ";"     , "legend": ["き", "ち"]             , "size": 1,    "finger": 9, "home": true},
+      {"id": "g"     , "legend": ["た", "よ"]             , "size": 1,    "finger": 3},
+      {"id": "h"     , "legend": ["く", "ま"]             , "size": 1,    "finger": 6},
+      {"id": "j"     , "legend": ["う", "お"]             , "size": 1,    "finger": 6, "home": true},
+      {"id": "k"     , "legend": ["☆", "も", "みゅ"]     , "size": 1,    "finger": 7, "home": true},
+      {"id": "l"     , "legend": ["゛゜小", "わ"]         , "size": 1,    "finger": 8, "home": true},
+      {"id": ";"     , "legend": ["き", "ち", "ちゅ"]     , "size": 1,    "finger": 9, "home": true},
       {"id": "'"     , "legend": ["'"]                    , "size": 1,    "finger": 9},
       {"id": "enter" , "legend": ["Enter"]     , "size": 2.25, "finger": 9}
     ],
@@ -55,12 +55,12 @@
       {"id": "x"     , "legend": ["け", "へ", "びゃ"]     , "size": 1,    "finger": 1},
       {"id": "c"     , "legend": ["に", "せ", "じゃ"]     , "size": 1,    "finger": 2},
       {"id": "v"     , "legend": ["な", "ゅ", "ぎゃ"]     , "size": 1,    "finger": 3},
-      {"id": "b"     , "legend": ["さ", "ゃ", "ぢゃ"]     , "size": 1,    "finger": 3},
+      {"id": "b"     , "legend": ["さ", "ゃ"]             , "size": 1,    "finger": 3},
       {"id": "n"     , "legend": ["っ", "む"]             , "size": 1,    "finger": 6},
       {"id": "m"     , "legend": ["る", "ろ"]             , "size": 1,    "finger": 6},
-      {"id": ","     , "legend": ["、"]                   , "size": 1,    "finger": 7},
+      {"id": ","     , "legend": ["、", "", "みゃ"]       , "size": 1,    "finger": 7},
       {"id": "."     , "legend": ["。"]                   , "size": 1,    "finger": 8},
-      {"id": "/"     , "legend": ["・"]                   , "size": 1,    "finger": 9},
+      {"id": "/"     , "legend": ["・", "", "ちゃ"]      , "size": 1,    "finger": 9},
       {"id": "shiftr", "legend": ["Shift"]     , "size": 2.75, "finger": 9}
     ],
     [
@@ -202,9 +202,9 @@
     "しゅ": {"keys": ["e", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "しょ": {"keys": ["e", "t"], "shift":[], "type":"seq", "ime": true},
 
-    "ちゃ": {"keys": ["d", ";", "k", "b"], "shift":[], "type":"seq", "ime": true},
-    "ちゅ": {"keys": ["d", ";", "k", "v"], "shift":[], "type":"seq", "ime": true},
-    "ちょ": {"keys": ["d", ";", "t"], "shift":[], "type":"seq", "ime": true},
+    "ちゃ": {"keys": ["/"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ちゅ": {"keys": [";"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ちょ": {"keys": ["p"], "shift":["k", "l"], "type":"seq", "ime": true},
 
     "にゃ": {"keys": ["c", "k", "b"], "shift":[], "type":"seq", "ime": true},
     "にゅ": {"keys": ["c", "k", "v"], "shift":[], "type":"seq", "ime": true},
@@ -214,9 +214,9 @@
     "ひゅ": {"keys": ["k", "w", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "ひょ": {"keys": ["k", "w", "t"], "shift":[], "type":"seq", "ime": true},
 
-    "みゃ": {"keys": ["h"], "shift":["k", "l"], "type":"seq", "ime": true},
-    "みゅ": {"keys": ["j"], "shift":["k", "l"], "type":"seq", "ime": true},
-    "みょ": {"keys": ["k"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "みゃ": {"keys": [","], "shift":["k", "l"], "type":"seq", "ime": true},
+    "みゅ": {"keys": ["k"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "みょ": {"keys": ["i"], "shift":["k", "l"], "type":"seq", "ime": true},
 
     "りゃ": {"keys": ["p", "k", "b"], "shift":[], "type":"seq", "ime": true},
     "りゅ": {"keys": ["p", "k", "v"], "shift":[], "type":"seq", "ime": true},
@@ -230,7 +230,7 @@
     "じゅ": {"keys": ["d"], "shift":["k", "l"], "type":"seq", "ime": true},
     "じょ": {"keys": ["e"], "shift":["k", "l"], "type":"seq", "ime": true},
 
-    "ぢゃ": {"keys": ["b"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "ぢゃ": {"keys": ["d", ";", "l", "k", "b"], "shift":[], "type":"seq", "ime": true},
     "ぢゅ": {"keys": ["d", ";", "l", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "ぢょ": {"keys": ["d", ";", "l", "t"], "shift":[], "type":"seq", "ime": true},
 
@@ -242,11 +242,9 @@
     "ぴゅ": {"keys": ["a"], "shift":["k", "l"], "type":"seq", "ime": true},
     "ぴょ": {"keys": ["q"], "shift":["k", "l"], "type":"seq", "ime": true},
 
-    "でゅ": {"keys": ["g"], "shift":["k", "l"], "type":"seq", "ime": true},
-    "でぃ": {"keys": ["t"], "shift":["k", "l"], "type":"seq", "ime": true},
+    "でぃ": {"keys": ["r", "l", "i", "l"], "shift":[], "type":"seq", "ime": true},
+    "でゅ": {"keys": ["r", "l", "k", "v"], "shift":[], "type":"seq", "ime": true},
     "でゃ": {"keys": ["r", "l", "k", "b"], "shift":[], "type":"seq", "ime": true},
-    "でょ": {"keys": ["r", "l", "t"], "shift":[], "type":"seq", "ime": true},
-
-    ";": {"keys": ["l"], "shift":["k", "l"], "type":"seq"}
+    "でょ": {"keys": ["r", "l", "t"], "shift":[], "type":"seq", "ime": true}
   }
 }
